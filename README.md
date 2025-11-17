@@ -10,22 +10,17 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 ### Supported Features
 
 Currently supports the following OpenMP directives and clauses:
+
+#### Parallel Execution
 - `#pragma omp parallel for num_threads(N)` - Parallel for loop with specified thread count
 - `if(condition)` clause - Conditional parallelization based on runtime conditions
 
-#### Example: Conditional Parallelization
+#### Synchronization Constructs
+- `#pragma omp barrier` - Thread barrier synchronization (all threads wait at sync point)
+- `#pragma omp critical [(name)]` - Critical section for mutual exclusion
+- `#pragma omp master` - Code region executed only by the master thread
+- `#pragma omp single` - Code region executed by only one thread
 
-```cpp
-int n = 1000;
-
-// Only parallelize if n is large enough to benefit from threading overhead
-#pragma omp parallel for if(n > 500) num_threads(8)
-for (int i = 0; i < n; i++) {
-    // computation...
-}
-```
-
-When the `if` clause evaluates to `false`, the loop executes serially without creating threads, avoiding unnecessary overhead for small problem sizes.
 
 ## Usage
 
@@ -57,7 +52,7 @@ To build the library from source:
 # Build the library
 make
 
-# Output will be generated at: build/dist/libsimpleomp.a
+# Output will be generated at: dist/libsimpleomp.a
 ```
 
 ## Running the Examples
@@ -75,12 +70,7 @@ make
 
 # Start a local server to test (requires PNPM)
 make serve
-
-# Open example/index.html in your browser to see all examples
 ```
-
-**Tip:** To observe the performance difference in [example/src/main.cpp](example/src/main.cpp), you can comment out the `#pragma` line, rebuild, and compare the execution time.
-
 
 ## License
 
