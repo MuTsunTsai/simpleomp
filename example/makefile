@@ -4,15 +4,15 @@ MAKEFLAGS += -j12
 CXX := em++
 
 SRCF := src
-TEMP := build/obj
-TARGET := build/dist
+TEMP := obj
+TARGET := demo
 
 SRC := $(wildcard $(SRCF)/*.cpp)
 OBJ := $(patsubst $(SRCF)/%.cpp,$(TEMP)/%.o,$(SRC))
 DEP := $(patsubst $(SRCF)/%.cpp,$(TEMP)/%.d,$(SRC))
 HTML := $(patsubst $(SRCF)/%.cpp,$(TARGET)/%.html,$(SRC))
 LDFLAGS :=\
-	-L../build/dist\
+	-L../dist\
 	-lsimpleomp\
 	--proxy-to-worker\
 	-sENVIRONMENT=worker\
@@ -35,12 +35,12 @@ endif
 
 .PHONY: all
 all: $(HTML)
+	@echo [33mExample compile complete![0m
 
-$(TARGET)/%.html: $(TEMP)/%.o makefile
+$(TARGET)/%.html: $(TEMP)/%.o makefile src/template.html
 	$(MK)
-	@echo Compiling [33m$(HTML)[0m
-	@$(LINK.cc) $(USRFLAGS) $< -o $@
-	@echo [33mWebAssembly compile complete![0m
+	@echo Compiling [33m$@[0m
+	@$(LINK.cc) $(USRFLAGS) --shell-file src/template.html $< -o $@
 
 $(TEMP)/%.o: $(SRCF)/%.cpp
 	$(MK)

@@ -31,8 +31,8 @@ jobs:
 
       - name: Verify build output
         run: |
-          ls -lh build/dist/
-          file build/dist/libsimpleomp.a
+          ls -lh dist/
+          file dist/libsimpleomp.a
 
       - name: Extract version from tag
         id: version
@@ -84,7 +84,7 @@ jobs:
 
             See the [README](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/README.md) for more details.
           files: |
-            build/dist/libsimpleomp.a
+            dist/libsimpleomp.a
           draft: false
           prerelease: false
         env:

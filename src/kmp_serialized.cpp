@@ -1,6 +1,5 @@
-// Copyright 2020 Tencent
-// SPDX-License-Identifier: BSD-3-Clause
-// Modified by Mu-Tsun Tsai for SimpleOMP
+// Copyright 2025 Mu-Tsun Tsai
+// SPDX-License-Identifier: MIT
 
 #include "platform.h"
 
@@ -35,7 +34,7 @@ void __kmpc_end_serialized_parallel(void* /*loc*/, int32_t /*gtid*/)
     // NCNN_LOGE("__kmpc_end_serialized_parallel");
     // Exit a serialized parallel construct
     // Reset thread-local storage if needed
-    // In SimpleOMP's architecture, we don't need special cleanup here
+    // In SimpleOMP architecture, we don't need special cleanup here
 }
 
 #ifdef __cplusplus

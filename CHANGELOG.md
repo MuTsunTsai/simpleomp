@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-17
+
+### Added
+- Support for OpenMP synchronization constructs:
+  - **`#pragma omp barrier`** - Thread barrier synchronization
+    - Implemented `__kmpc_barrier()` function using generation counter pattern
+    - Ensures all threads reach the synchronization point before continuing
+    - Example: [example/src/barrier.cpp](example/src/barrier.cpp)
+  - **`#pragma omp critical`** - Critical sections for mutual exclusion
+    - Implemented `__kmpc_critical()` and `__kmpc_end_critical()` functions
+    - Supports named critical sections using mutex map
+    - Example: [example/src/critical.cpp](example/src/critical.cpp)
+  - **`#pragma omp master`** - Master thread-only execution regions
+    - Implemented `__kmpc_master()` and `__kmpc_end_master()` functions
+    - Simple thread ID check for master thread (thread 0)
+    - Example: [example/src/master.cpp](example/src/master.cpp)
+  - **`#pragma omp single`** - Single thread execution regions
+    - Implemented `__kmpc_single()` and `__kmpc_end_single()` functions
+    - Uses map to track first arriving thread per location
+    - Example: [example/src/single.cpp](example/src/single.cpp)
+
+### Technical Details
+- **Barrier implementation**: Uses mutex, condition variable, and generation counter to handle multiple barrier calls correctly
+- **Critical sections**: Each named critical section has its own mutex stored in a thread-safe map
+- **Master construct**: Lightweight implementation with simple thread number comparison
+- **Single construct**: Tracks execution state per source location to ensure only one thread executes the region
+- All synchronization primitives properly integrate with the existing thread pool architecture
+
+
 ## [1.1.0] - 2025-01-17
 
 ### Added

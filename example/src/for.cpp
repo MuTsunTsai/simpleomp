@@ -2,6 +2,8 @@
 #include <iostream>
 
 int main() {
+	std::cout << "=== OpenMP Parallel For Demo ===" << std::endl << std::endl;
+
 	// Large array for computation
 	std::vector<double> data(10000);
 	std::vector<double> buffer(10000);
@@ -22,7 +24,7 @@ int main() {
 	for(int i = 0; i < 10000; i++) {
 		double temp = data[i];
 		// Perform heavy computation: polynomial evaluation
-		for(int j = 1; j < 1000000; j++) {
+		for(int j = 1; j < 200000; j++) {
 			temp = temp * 1.0001 + 0.0001;
 			temp = sqrt(temp + j);
 		}

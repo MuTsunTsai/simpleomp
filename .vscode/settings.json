@@ -6,5 +6,11 @@
 	],
 	"C_Cpp.codeAnalysis.clangTidy.enabled": true,
 	"C_Cpp.codeAnalysis.clangTidy.headerFilter": "${workspaceFolder}",
-	"C_Cpp.loggingLevel": "Debug"
+	"C_Cpp.loggingLevel": "Debug",
+	"files.exclude": {
+		"**/obj": true
+	},
+	"cSpell.words": [
+		"kmpc"
+	]
 }

@@ -4,51 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SimpleOMP Examples</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
+        /* Page-specific styles */
         .container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             max-width: 800px;
-            width: 100%;
             padding: 3rem;
         }
 
         h1 {
             font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            color: #667eea;
-            text-align: center;
         }
 
         .subtitle {
-            text-align: center;
-            color: #666;
             margin-bottom: 2rem;
             font-size: 1.1rem;
         }
 
         .description {
-            background: #f7fafc;
-            border-left: 4px solid #667eea;
+            background: #1e1e2e;
+            border-left: 4px solid #8b9cff;
             padding: 1rem 1.5rem;
             margin-bottom: 2rem;
             border-radius: 4px;
@@ -68,8 +43,8 @@
         }
 
         .example-card {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: #1e1e2e;
+            border: 2px solid #3a3a4e;
             border-radius: 8px;
             padding: 1.5rem;
             transition: all 0.3s ease;
@@ -79,15 +54,15 @@
         }
 
         .example-card:hover {
-            border-color: #667eea;
+            border-color: #8b9cff;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 4px 12px rgba(139, 156, 255, 0.3);
         }
 
         .example-card h2 {
             font-size: 1.5rem;
             margin-bottom: 0.5rem;
-            color: #667eea;
+            color: #8b9cff;
             display: flex;
             align-items: center;
         }
@@ -99,12 +74,12 @@
         }
 
         .example-card p {
-            color: #666;
+            color: #adb5bd;
             line-height: 1.5;
         }
 
         .example-card code {
-            background: #e9ecef;
+            background: #2a2a3e;
             padding: 0.2rem 0.5rem;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
@@ -113,31 +88,9 @@
 
         .footer {
             margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #e9ecef;
-            text-align: center;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
         }
 
         @media (max-width: 600px) {
-            body {
-                padding: 1rem;
-            }
-
-            .container {
-                padding: 1.5rem;
-            }
-
             h1 {
                 font-size: 2rem;
             }
@@ -147,16 +100,15 @@
 <body>
     <div class="container">
         <h1>SimpleOMP Examples</h1>
-        <p class="subtitle">Lightweight OpenMP Implementation for Emscripten</p>
+        <p class="subtitle">Lightweight OpenMP for Emscripten</p>
 
         <div class="description">
             <p><strong>What is SimpleOMP?</strong></p>
             <p>SimpleOMP enables basic parallel programming capabilities in WebAssembly applications through a minimal OpenMP runtime for Emscripten-compiled projects.</p>
-            <p><strong>Note:</strong> These examples run in Web Workers with SharedArrayBuffer support. Make sure your server is configured with appropriate COOP/COEP headers.</p>
         </div>
 
         <div class="examples">
-            <a href="build/dist/for.html" class="example-card">
+            <a href="demo/for.html" class="example-card">
                 <h2>Parallel For Loop</h2>
                 <p>
                     Demonstrates basic <code>#pragma omp parallel for</code> usage with heavy computation.
@@ -164,11 +116,43 @@
                 </p>
             </a>
 
-            <a href="build/dist/if.html" class="example-card">
+            <a href="demo/if.html" class="example-card">
                 <h2>Conditional Parallelization (if clause)</h2>
                 <p>
                     Shows how to use <code>if(condition)</code> clause to dynamically enable or disable parallelization
                     based on runtime conditions. Serial execution when n=100, parallel execution when n=5000.
+                </p>
+            </a>
+
+            <a href="demo/master.html" class="example-card">
+                <h2>Master Thread Construct</h2>
+                <p>
+                    Demonstrates <code>#pragma omp master</code> to execute code only on the master thread (thread 0).
+                    Useful for initialization, I/O operations, or coordinating parallel work.
+                </p>
+            </a>
+
+            <a href="demo/critical.html" class="example-card">
+                <h2>Critical Section</h2>
+                <p>
+                    Shows <code>#pragma omp critical</code> for mutual exclusion. Ensures only one thread
+                    executes the critical section at a time, preventing race conditions.
+                </p>
+            </a>
+
+            <a href="demo/barrier.html" class="example-card">
+                <h2>Barrier Synchronization</h2>
+                <p>
+                    Demonstrates <code>#pragma omp barrier</code> to synchronize all threads at specific points.
+                    All threads wait at the barrier until every thread in the team arrives.
+                </p>
+            </a>
+
+            <a href="demo/single.html" class="example-card">
+                <h2>Single Thread Execution</h2>
+                <p>
+                    Shows <code>#pragma omp single</code> where only one thread (first to arrive) executes the block.
+                    Useful for one-time initialization in parallel regions.
                 </p>
             </a>
         </div>
@@ -176,7 +160,7 @@
         <div class="footer">
             <p>
                 Built with SimpleOMP |
-                <a href="https://github.com/emscripten-core/emscripten/issues/13892" target="_blank">Learn More</a>
+                <a href="https://github.com/MuTsunTsai/simpleomp" target="_blank">Learn More</a>
             </p>
         </div>
     </div>

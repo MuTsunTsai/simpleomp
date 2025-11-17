@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimpleOMP Example Output</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../demo.css">
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">Back to Examples</a>
+
+        <h1>SimpleOMP Example</h1>
+        <p class="subtitle">Lightweight OpenMP for Emscripten</p>
+
+        <div class="status-section">
+            <div class="status" id="status">
+                <span class="spinner" id="spinner"></span>
+                <span id="status-text">Initializing...</span>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <progress value="0" max="100" id="progress" hidden></progress>
+        </div>
+
+        <div class="output-section">
+            <div class="output-label">Program Output:</div>
+            <textarea class="output-box" id="output" rows="20" readonly></textarea>
+        </div>
+
+        <div class="footer">
+            <p>
+                Built with SimpleOMP |
+                <a href="https://github.com/MuTsunTsai/simpleomp" target="_blank">Learn More</a>
+            </p>
+        </div>
+    </div>
+
+    <script type='text/javascript'>
+        var statusElement = document.getElementById('status-text');
+        var statusContainer = document.getElementById('status');
+        var progressElement = document.getElementById('progress');
+        var spinnerElement = document.getElementById('spinner');
+        var outputElement = document.getElementById('output');
+
+        // Clear browser cache
+        if (outputElement) outputElement.value = '';
+
+        var Module = {
+            print(...args) {
+                console.log(...args);
+                if (outputElement) {
+                    var text = args.join(' ');
+                    outputElement.value += text + "\n";
+                    outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
+                }
+            },
+			canvas: document.createElement("canvas"),
+            setStatus(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+                if (m) {
+                    text = m[1];
+                    progressElement.value = parseInt(m[2])*100;
+                    progressElement.max = parseInt(m[4])*100;
+                    progressElement.hidden = false;
+                    spinnerElement.style.display = 'inline-block';
+                } else {
+                    progressElement.value = null;
+                    progressElement.max = null;
+                    progressElement.hidden = true;
+                    if (!text) {
+                        spinnerElement.style.display = 'none';
+                        statusContainer.style.display = 'none';
+                    }
+                }
+                statusElement.innerHTML = text;
+            },
+            totalDependencies: 0,
+            monitorRunDependencies(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+
+        Module.setStatus('Loading...');
+
+        window.onerror = () => {
+            Module.setStatus('Exception thrown, see JavaScript console');
+            spinnerElement.style.display = 'none';
+            Module.setStatus = (text) => {
+                if (text) console.error('[post-exception status] ' + text);
+            };
+        };
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>

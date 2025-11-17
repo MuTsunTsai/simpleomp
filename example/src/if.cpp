@@ -2,6 +2,8 @@
 #include <chrono>
 
 int main() {
+    std::cout << "=== OpenMP If Clause Demo ===" << std::endl << std::endl;
+
     int n = 100;
 
     // Test 1: n=100, should execute serially

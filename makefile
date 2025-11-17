@@ -5,8 +5,8 @@ CXX := em++
 AR := emar
 
 SRCF := src
-TEMP := build/obj
-TARGET := build/dist
+TEMP := obj
+TARGET := dist
 
 SRC := $(wildcard $(SRCF)/*.cpp)
 OBJ := $(patsubst $(SRCF)/%.cpp,$(TEMP)/%.o,$(SRC))

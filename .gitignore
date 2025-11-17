@@ -1,3 +1,6 @@
-**/build/
+**/dist/
+**/demo/
+**/obj/
+.claude/
 
 CLAUDE.md

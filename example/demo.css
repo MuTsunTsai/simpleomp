@@ -1,0 +1,123 @@
+.status-section {
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+
+.status {
+	display: inline-block;
+	padding: 0.5rem 1rem;
+	background: #1e1e2e;
+	border: 2px solid #8b9cff;
+	border-radius: 6px;
+	font-weight: 500;
+	color: #8b9cff;
+}
+
+.spinner {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	margin-right: 0.5rem;
+	border: 3px solid #3a3a4e;
+	border-top: 3px solid #8b9cff;
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	vertical-align: middle;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.progress-section {
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+
+progress {
+	width: 100%;
+	max-width: 400px;
+	height: 20px;
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+progress::-webkit-progress-bar {
+	background-color: #3a3a4e;
+	border-radius: 10px;
+}
+
+progress::-webkit-progress-value {
+	background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+	border-radius: 10px;
+}
+
+progress::-moz-progress-bar {
+	background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+	border-radius: 10px;
+}
+
+.output-section {
+	margin-top: 1rem;
+}
+
+.output-label {
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+	color: #e9ecef;
+	font-size: 1.1rem;
+}
+
+.output-box {
+	width: 100%;
+	min-height: 400px;
+	padding: 1rem;
+	font-family: 'Courier New', 'Consolas', monospace;
+	font-size: 0.9rem;
+	background: #1e1e2e;
+	color: #e9ecef;
+	border: 1px solid #3a3a4e;
+	border-radius: 6px;
+	resize: vertical;
+	line-height: 1.5;
+}
+
+.output-box:focus {
+	outline: 2px solid #8b9cff;
+}
+
+.back-link {
+	display: inline-block;
+	margin-bottom: 1rem;
+	padding: 0.5rem 1rem;
+	background: #1e1e2e;
+	border: 1px solid #3a3a4e;
+	border-radius: 6px;
+	color: #8b9cff;
+	text-decoration: none;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.back-link:hover {
+	background: #8b9cff;
+	color: #1e1e2e;
+	border-color: #8b9cff;
+}
+
+.back-link::before {
+	content: '← ';
+}
+
+@media (max-width: 600px) {
+	.output-box {
+		min-height: 300px;
+		font-size: 0.8rem;
+	}
+}
