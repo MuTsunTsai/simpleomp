@@ -9,8 +9,23 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 
 ### Supported Features
 
-Currently supports the following OpenMP directive:
-- `#pragma omp parallel for num_threads(N)`
+Currently supports the following OpenMP directives and clauses:
+- `#pragma omp parallel for num_threads(N)` - Parallel for loop with specified thread count
+- `if(condition)` clause - Conditional parallelization based on runtime conditions
+
+#### Example: Conditional Parallelization
+
+```cpp
+int n = 1000;
+
+// Only parallelize if n is large enough to benefit from threading overhead
+#pragma omp parallel for if(n > 500) num_threads(8)
+for (int i = 0; i < n; i++) {
+    // computation...
+}
+```
+
+When the `if` clause evaluates to `false`, the loop executes serially without creating threads, avoiding unnecessary overhead for small problem sizes.
 
 ## Usage
 
@@ -45,22 +60,26 @@ make
 # Output will be generated at: build/dist/libsimpleomp.a
 ```
 
-## Running the Example
+## Running the Examples
 
-The [example](example/) directory contains a sample project demonstrating SimpleOMP usage.
+The [example](example/) directory contains sample projects demonstrating SimpleOMP usage:
+- **for.cpp** - Basic parallel for loop with performance comparison
+- **if.cpp** - Conditional parallelization using the `if` clause
 
 ```bash
 # Navigate to the example directory
 cd example
 
-# Build the example
+# Build all examples
 make
 
 # Start a local server to test (requires PNPM)
 make serve
+
+# Open example/index.html in your browser to see all examples
 ```
 
-**Tip:** To observe the performance difference, you can comment out the `#pragma` line in [example/src/main.cpp](example/src/main.cpp), rebuild, and compare the execution time.
+**Tip:** To observe the performance difference in [example/src/main.cpp](example/src/main.cpp), you can comment out the `#pragma` line, rebuild, and compare the execution time.
 
 
 ## License

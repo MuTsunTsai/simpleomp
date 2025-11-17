@@ -281,8 +281,9 @@ pthread_once_t ncnn::KMPGlobal::is_initialized = PTHREAD_ONCE_INIT;
 
 static ncnn::KMPGlobal g_kmp_global;
 
-static ncnn::ThreadLocalStorage tls_num_threads;
-static ncnn::ThreadLocalStorage tls_thread_num;
+// Export these for use in other compilation units (e.g., kmp_serialized.cpp)
+ncnn::ThreadLocalStorage tls_num_threads;
+ncnn::ThreadLocalStorage tls_thread_num;
 
 static void init_g_kmp_global()
 {
