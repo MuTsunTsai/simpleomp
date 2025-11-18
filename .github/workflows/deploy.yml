@@ -41,13 +41,18 @@ jobs:
 
       - name: Verify environment
         run: |
-          echo "Node path: $(which node)"
-          echo "Node version: $(node --version)"
-          ls -la $(which node)
-          echo "PATH: $PATH"
+          echo "=== Checking all 'node' in PATH ==="
+          which -a node
+          echo "=== Checking Emscripten directory ==="
+          ls -la /home/runner/work/_temp/*/emsdk-main/upstream/emscripten/node* || echo "No node files in emscripten"
+          ls -la /home/runner/work/_temp/*/emsdk-main/node* || echo "No node files in emsdk"
+          echo "=== Testing node directly ==="
+          /opt/hostedtoolcache/node/20.19.5/x64/bin/node --version
 
       - name: Build library and examples
-        run: make with-examples
+        run: |
+          export PATH="/opt/hostedtoolcache/node/20.19.5/x64/bin:$PATH"
+          make with-examples
 
       - name: Prepare deployment files
         run: |
