@@ -15,6 +15,8 @@ const cppFile = process.argv[2];
 const htmlFile = process.argv[3];
 
 try {
+	console.log(`[embed-code] Processing: ${cppFile} -> ${htmlFile}`);
+
 	// Check if files exist and are accessible
 	if (!fs.existsSync(cppFile)) {
 		throw new Error(`C++ file not found: ${cppFile}`);
@@ -33,6 +35,7 @@ try {
 
 	// Read C++ source code
 	let cppContent = fs.readFileSync(cppFile, 'utf8');
+	console.log(`[embed-code] Read ${cppContent.length} bytes from ${cppFile}`);
 
 	// escape the content
 	cppContent = cppContent
@@ -42,12 +45,14 @@ try {
 
 	// Read HTML file
 	let htmlContent = fs.readFileSync(htmlFile, 'utf8');
+	console.log(`[embed-code] Read ${htmlContent.length} bytes from ${htmlFile}`);
 
 	// Replace {{CODE}} with the escaped C++ content
 	htmlContent = htmlContent.replace('{{CODE}}', cppContent);
 
 	// Write back to HTML file
 	fs.writeFileSync(htmlFile, htmlContent, 'utf8');
+	console.log(`[embed-code] Successfully embedded code into ${htmlFile}`);
 
 } catch (error) {
 	console.error('[embed-code] Error:', error.message);
