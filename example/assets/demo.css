@@ -1,3 +1,13 @@
+html {
+	color-scheme: dark;
+}
+
+.shiki {
+	padding: 1em;
+	width: 100%;
+	overflow-x: auto;
+}
+
 .status-section {
 	margin-bottom: 1.5rem;
 	text-align: center;
@@ -67,8 +77,9 @@ progress::-moz-progress-bar {
 	margin-top: 1rem;
 }
 
-.output-label {
+h2 {
 	font-weight: 600;
+	margin-top: 1.5rem;
 	margin-bottom: 0.5rem;
 	color: #e9ecef;
 	font-size: 1.1rem;
@@ -76,6 +87,7 @@ progress::-moz-progress-bar {
 
 .output-box {
 	width: 100%;
+	overflow-x: auto;
 	min-height: 400px;
 	padding: 1rem;
 	font-family: 'Courier New', 'Consolas', monospace;

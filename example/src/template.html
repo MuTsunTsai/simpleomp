@@ -1,121 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimpleOMP Example Output</title>
-    <link rel="stylesheet" href="../assets/style.css">
-    <link rel="stylesheet" href="../assets/demo.css">
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>SimpleOMP Example Output</title>
+	<link rel="stylesheet" href="../assets/style.css">
+	<link rel="stylesheet" href="../assets/demo.css">
+	<script>
+		const sabAvailable = typeof SharedArrayBuffer !== "undefined";
+		if('serviceWorker' in navigator && location.hostname != "localhost") {
+			navigator.serviceWorker.register("../sw.js");
+			if(!sabAvailable) {
+				// Use location.reload() could lead to undesirable bfcache,
+				// so we use location.replace instead
+				const reloader = () => location.replace(location.href);
+				// We wait at least one second here, to avoid flashes
+				setTimeout(() => navigator.serviceWorker.ready.then(reloader), 1000);
+			}
+		}
+	</script>
 </head>
+
 <body>
-    <div class="container">
-        <a href="../index.html" class="back-link">Back to Examples</a>
+	<div class="container">
+		<div id="init" style="display: none;">
+			Initializing... <span class="loader"></span>
+		</div>
 
-        <h1>SimpleOMP Example</h1>
-        <p class="subtitle">Lightweight OpenMP for Emscripten</p>
+		<div id="main" style="display: none;">
+			<a href="../index.html" class="back-link">Back to Examples</a>
 
-        <div class="status-section">
-            <div class="status" id="status">
-                <span class="spinner" id="spinner"></span>
-                <span id="status-text">Initializing...</span>
-            </div>
-        </div>
+			<h1>SimpleOMP Example</h1>
+			<p class="subtitle">Lightweight OpenMP for Emscripten</p>
 
-        <div class="progress-section">
-            <progress value="0" max="100" id="progress" hidden></progress>
-        </div>
+			<div class="status-section">
+				<div class="status" id="status">
+					<span class="spinner" id="spinner"></span>
+					<span id="status-text">Initializing...</span>
+				</div>
+			</div>
 
-        <div class="output-section">
-            <div class="output-label">Program Output:</div>
-            <div class="output-box" id="output"></textarea>
-        </div>
+			<div class="progress-section">
+				<progress value="0" max="100" id="progress" hidden></progress>
+			</div>
 
-        <div class="footer">
-            <p>
-                Built with SimpleOMP |
-                <a href="https://github.com/MuTsunTsai/simpleomp" target="_blank">Learn More</a>
-            </p>
-        </div>
-    </div>
+			<div class="output-section">
+				<h2>Program Output:</h2>
+				<div class="output-box" id="output"></div>
+			</div>
 
-    <script>
-        var statusElement = document.getElementById('status-text');
-        var statusContainer = document.getElementById('status');
-        var progressElement = document.getElementById('progress');
-        var spinnerElement = document.getElementById('spinner');
-        var outputElement = document.getElementById('output');
+			<div id="sc-section" style="display: none;">
+				<h2>Source Code:</h2>
+				<code id="code"></code>
+			</div>
 
-        // Clear browser cache
-        if (outputElement) outputElement.value = '';
+			<div class="footer">
+				<p>
+					Built with SimpleOMP |
+					<a href="https://github.com/MuTsunTsai/simpleomp" target="_blank">Learn More</a>
+				</p>
+			</div>
+		</div>
 
-        var Module = {
-            print(...args) {
-                console.log(...args);
-                if (outputElement) {
+	</div>
+
+	<script type="module">
+		import { codeToHtml } from 'https://esm.sh/shiki@3.15.0';
+		const code = document.getElementById('code');
+		code.innerHTML = await codeToHtml("{{CODE}}", {
+			lang: 'cpp',
+			theme: 'material-theme-darker'
+		});
+		document.getElementById("sc-section").style.display = "block";
+	</script>
+	<script>
+		// Display proper content
+		const divToShow = sabAvailable ? "main" : "init";
+		const div = document.getElementById(divToShow);
+		div.style.display = "block";
+
+		var statusElement = document.getElementById('status-text');
+		var statusContainer = document.getElementById('status');
+		var progressElement = document.getElementById('progress');
+		var spinnerElement = document.getElementById('spinner');
+		var outputElement = document.getElementById('output');
+
+		// Clear browser cache
+		if(outputElement) outputElement.value = '';
+
+		var Module = {
+			print(...args) {
+				console.log(...args);
+				if(outputElement) {
 					const div = document.createElement("div");
 					const text = args.join(' ');
 					if(text) div.innerText = text;
 					else div.appendChild(document.createElement("br"));
 					outputElement.appendChild(div);
-                    outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
-                }
-            },
+					outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
+				}
+			},
 			printErr(...args) {
 				console.error(...args);
-				if (outputElement) {
+				if(outputElement) {
 					const div = document.createElement("div");
 					div.style.color = "red";
 					const text = args.join(' ');
 					if(text) div.innerText = text;
 					else div.appendChild(document.createElement("br"));
 					outputElement.appendChild(div);
-                    outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
-                }
+					outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
+				}
 			},
 			canvas: document.createElement("canvas"),
-            setStatus(text) {
-                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
-                if (text === Module.setStatus.last.text) return;
-                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-                var now = Date.now();
-                if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
-                Module.setStatus.last.time = now;
-                Module.setStatus.last.text = text;
-                if (m) {
-                    text = m[1];
-                    progressElement.value = parseInt(m[2])*100;
-                    progressElement.max = parseInt(m[4])*100;
-                    progressElement.hidden = false;
-                    spinnerElement.style.display = 'inline-block';
-                } else {
-                    progressElement.value = null;
-                    progressElement.max = null;
-                    progressElement.hidden = true;
-                    if (!text) {
-                        spinnerElement.style.display = 'none';
-                        statusContainer.style.display = 'none';
-                    }
-                }
-                statusElement.innerHTML = text;
-            },
-            totalDependencies: 0,
-            monitorRunDependencies(left) {
-                this.totalDependencies = Math.max(this.totalDependencies, left);
-                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-            }
-        };
+			setStatus(text) {
+				if(!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+				if(text === Module.setStatus.last.text) return;
+				var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+				var now = Date.now();
+				if(m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+				Module.setStatus.last.time = now;
+				Module.setStatus.last.text = text;
+				if(m) {
+					text = m[1];
+					progressElement.value = parseInt(m[2]) * 100;
+					progressElement.max = parseInt(m[4]) * 100;
+					progressElement.hidden = false;
+					spinnerElement.style.display = 'inline-block';
+				} else {
+					progressElement.value = null;
+					progressElement.max = null;
+					progressElement.hidden = true;
+					if(!text) {
+						spinnerElement.style.display = 'none';
+						statusContainer.style.display = 'none';
+					}
+				}
+				statusElement.innerHTML = text;
+			},
+			totalDependencies: 0,
+			monitorRunDependencies(left) {
+				this.totalDependencies = Math.max(this.totalDependencies, left);
+				Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+			}
+		};
 
-        Module.setStatus('Loading...');
+		Module.setStatus('Loading...');
 
-        window.onerror = () => {
-            Module.setStatus('Exception thrown, see JavaScript console');
-            spinnerElement.style.display = 'none';
-            Module.setStatus = (text) => {
-                if (text) console.error('[post-exception status] ' + text);
-            };
-        };
-    </script>
-    {{{ SCRIPT }}}
+		window.onerror = () => {
+			Module.setStatus('Exception thrown, see JavaScript console');
+			spinnerElement.style.display = 'none';
+			Module.setStatus = (text) => {
+				if(text) console.error('[post-exception status] ' + text);
+			};
+		};
+	</script>
+	{{{ SCRIPT }}}
 </body>
+
 </html>

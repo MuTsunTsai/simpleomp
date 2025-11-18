@@ -37,7 +37,7 @@ $(SLIB): $(OBJ) makefile
 	$(MK)
 	@echo Compiling [33m$(SLIB)[0m
 	@$(AR) $(USRFLAGS) rcs $@ $(OBJ)
-	@echo [33mWebAssembly compile complete![0m
+	@echo [33mLibrary compile complete![0m
 
 $(TEMP)/%.o: $(SRCF)/%.cpp
 	$(MK)
@@ -54,3 +54,8 @@ $(TEMP)/%.o: $(SRCF)/%.cpp
 .PHONY: clean
 clean:
 	@$(RM) "$(TEMP)"
+
+.PHONY: with-examples
+with-examples: all
+	@echo [33mBuilding examples...[0m
+	@$(MAKE) -C example
