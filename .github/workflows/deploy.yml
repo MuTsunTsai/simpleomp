@@ -39,8 +39,12 @@ jobs:
           emcc --version
           em++ --version
 
-      - name: Setup build scripts
-        run: chmod +x example/embed-code.js
+      - name: Verify environment
+        run: |
+          echo "Node path: $(which node)"
+          echo "Node version: $(node --version)"
+          ls -la $(which node)
+          echo "PATH: $PATH"
 
       - name: Build library and examples
         run: make with-examples
