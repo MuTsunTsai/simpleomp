@@ -39,6 +39,9 @@ jobs:
           emcc --version
           em++ --version
 
+      - name: Setup build scripts
+        run: chmod +x example/embed-code.js
+
       - name: Build library and examples
         run: make with-examples
 
