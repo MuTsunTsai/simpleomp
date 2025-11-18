@@ -4,13 +4,16 @@
 		"--extra-arg-before=-target",
 		"--extra-arg-before=wasm32-unknown-emscripten"
 	],
+	"C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+		"clang-analyzer-deadcode.DeadStores"
+	],
 	"C_Cpp.codeAnalysis.clangTidy.enabled": true,
 	"C_Cpp.codeAnalysis.clangTidy.headerFilter": "${workspaceFolder}",
 	"C_Cpp.loggingLevel": "Debug",
-	"files.exclude": {
-		"**/obj": true
-	},
 	"cSpell.words": [
 		"kmpc"
-	]
+	],
+	"files.exclude": {
+		"**/obj": true
+	}
 }

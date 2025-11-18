@@ -8,7 +8,8 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Barrier Construct Demo ===" << endl << endl;
+	cout << "=== OpenMP Barrier Construct Demo ===" << endl
+		 << endl;
 
 	int phase1_complete = 0;
 	int phase2_complete = 0;
@@ -45,7 +46,8 @@ int main() {
 		}
 	}
 
-	cout << endl << "All phases completed successfully!" << endl;
+	cout << endl
+		 << "All phases completed successfully!" << endl;
 	cout << "Phase 1 count: " << phase1_complete << " (expected: 4)" << endl;
 	cout << "Phase 2 count: " << phase2_complete << " (expected: 4)" << endl;
 

@@ -1,12 +1,16 @@
 #include <chrono>
 #include <iostream>
 
+using namespace std;
+using namespace chrono;
+
 int main() {
-	std::cout << "=== OpenMP Parallel For Demo ===" << std::endl << std::endl;
+	cout << "=== OpenMP Parallel For Demo ===" << endl
+			  << endl;
 
 	// Large array for computation
-	std::vector<double> data(10000);
-	std::vector<double> buffer(10000);
+	vector<double> data(10000);
+	vector<double> buffer(10000);
 
 	// Initialize array with some values
 	for(int i = 0; i < 10000; i++) {
@@ -16,7 +20,7 @@ int main() {
 	int n_threads = 16;
 
 	// Start timing
-	auto start = std::chrono::high_resolution_clock::now();
+	auto start = high_resolution_clock::now();
 
 // Compute-intensive operation: calculate complex mathematical expressions
 // Each iteration performs multiple floating-point operations
@@ -32,10 +36,10 @@ int main() {
 	}
 
 	// End timing
-	auto end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	auto end = high_resolution_clock::now();
+	auto duration = duration_cast<milliseconds>(end - start);
 
-	std::cout << "Computation completed in " << duration.count() << " ms" << std::endl;
+	cout << "Computation completed in " << duration.count() << " ms" << endl;
 
 	// Sum
 	double result = 0.0;
@@ -43,7 +47,7 @@ int main() {
 		result += data[i];
 	}
 
-	std::cout << "Result is " << result << std::endl;
+	cout << "Result is " << result << endl;
 
 	return 0;
 }

@@ -9,17 +9,44 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 
 ### Supported Features
 
-Currently supports the following OpenMP directives and clauses:
-
 #### Parallel Execution
-- `#pragma omp parallel for num_threads(N)` - Parallel for loop with specified thread count
-- `if(condition)` clause - Conditional parallelization based on runtime conditions
 
-#### Synchronization Constructs
-- `#pragma omp barrier` - Thread barrier synchronization (all threads wait at sync point)
-- `#pragma omp critical [(name)]` - Critical section for mutual exclusion
-- `#pragma omp master` - Code region executed only by the master thread
-- `#pragma omp single` - Code region executed by only one thread
+| Directive/Clause | Status | Description |
+|------------------|--------|-------------|
+| `#pragma omp parallel for` | ✅ | Parallel for loop |
+| `num_threads(N)` | ✅ | Specify thread count |
+| `if(condition)` | ✅ | Conditional parallelization |
+| `schedule(static[, chunk])` | ✅ | Static loop scheduling (block or round-robin) |
+| `schedule(dynamic[, chunk])` | ✅ | Dynamic work distribution |
+| `schedule(guided[, chunk])` | ✅ | Guided scheduling with decreasing chunk sizes |
+| `schedule(runtime)` | ✅ | Runtime-determined scheduling (via `OMP_SCHEDULE`) |
+
+#### Synchronization
+
+| Directive/Clause | Status | Description |
+|------------------|--------|-------------|
+| `#pragma omp barrier` | ✅ | Thread barrier synchronization |
+| `#pragma omp critical [(name)]` | ✅ | Critical section (mutual exclusion) |
+| `#pragma omp master` | ✅ | Master thread-only execution |
+| `#pragma omp single` | ✅ | Single thread execution |
+| `#pragma omp atomic` | ❌ | Atomic operations |
+
+#### Work Sharing
+
+| Directive/Clause | Status | Description |
+|------------------|--------|-------------|
+| `#pragma omp sections` | ❌ | Separate code sections |
+| `#pragma omp task` | ❌ | Task-based parallelism |
+
+#### Data Environment
+
+| Directive/Clause | Status | Description |
+|------------------|--------|-------------|
+| `reduction(op:var)` | ❌ | Reduction operations |
+| `private(var)` | ❌ | Thread-private variables |
+| `shared(var)` | ❌ | Shared variables |
+| `firstprivate(var)` | ❌ | Initialize private from shared |
+| `lastprivate(var)` | ❌ | Update shared from last iteration |
 
 
 ## Usage
@@ -60,6 +87,11 @@ make
 The [example](example/) directory contains sample projects demonstrating SimpleOMP usage:
 - **for.cpp** - Basic parallel for loop with performance comparison
 - **if.cpp** - Conditional parallelization using the `if` clause
+- **schedule.cpp** - Loop scheduling strategies (static/dynamic/guided) with validation
+- **master.cpp** - Master thread construct demonstration
+- **critical.cpp** - Critical section for mutual exclusion
+- **barrier.cpp** - Barrier synchronization example
+- **single.cpp** - Single thread execution construct
 
 ```bash
 # Navigate to the example directory
@@ -70,6 +102,8 @@ make
 
 # Start a local server to test (requires PNPM)
 make serve
+
+# Open the URL that appears to see all examples
 ```
 
 ## License

@@ -37,10 +37,10 @@ endif
 all: $(HTML)
 	@echo [33mExample compile complete![0m
 
-$(TARGET)/%.html: $(TEMP)/%.o makefile src/template.html
+$(TARGET)/%.html: $(TEMP)/%.o makefile ../dist/libsimpleomp.a src/template.html $(wildcard src/%.js)
 	$(MK)
 	@echo Compiling [33m$@[0m
-	@$(LINK.cc) $(USRFLAGS) --shell-file src/template.html $< -o $@
+	@$(LINK.cc) $(USRFLAGS) -save-temps $(if $(wildcard src/$*.js),--pre-js src/$*.js) --shell-file src/template.html $< -o $@
 
 $(TEMP)/%.o: $(SRCF)/%.cpp
 	$(MK)

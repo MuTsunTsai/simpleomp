@@ -571,20 +571,34 @@ void __kmpc_fork_call(void* /*loc*/, int32_t argc, kmpc_micro fn, ...)
     }
 }
 
-void __kmpc_for_static_init_4(void* /*loc*/, int32_t gtid, int32_t /*sched*/, int32_t* last, int32_t* lower, int32_t* upper, int32_t* /*stride*/, int32_t /*incr*/, int32_t /*chunk*/)
+void __kmpc_for_static_init_4(void* /*loc*/, int32_t gtid, int32_t sched, int32_t* last, int32_t* lower, int32_t* upper, int32_t* stride, int32_t incr, int32_t chunk)
 {
     // NCNN_LOGE("__kmpc_for_static_init_4");
     int num_threads = omp_get_num_threads();
+    int32_t trip_count = (*upper - *lower) / incr + 1;
 
-    // TODO only support i++
-    int32_t count = *upper - *lower + 1;
-    int32_t threads = std::min(count, (int32_t)num_threads);
-    int32_t count_per_thread = count / threads;
-    int32_t remain = count % threads;
+    // Extract base schedule type (ignore modifier flags in high bits)
+    int base_sched = sched & 0xff;
 
-    *last = gtid == (int32_t)(threads - 1);
-    *lower = gtid * count_per_thread + std::min(remain, gtid);
-    *upper = std::min((gtid + 1) * count_per_thread + std::min(remain, gtid + 1) - 1, *upper);
+    // kmp_sch_static_chunked = 33, kmp_sch_static = 34
+    if (base_sched == 33 && chunk > 1) {
+        // Static chunked schedule: round-robin distribution of chunks
+        // Set up for chunked iteration with proper stride
+        *stride = incr * chunk * num_threads;
+        *lower = *lower + (gtid * chunk * incr);
+        *upper = *lower + (chunk * incr) - 1;
+        *last = 0;  // Last is determined during iteration
+    } else {
+        // Default static schedule: block distribution
+        int32_t threads = std::min(trip_count, (int32_t)num_threads);
+        int32_t count_per_thread = trip_count / threads;
+        int32_t remain = trip_count % threads;
+
+        *last = gtid == (int32_t)(threads - 1);
+        *lower = *lower + gtid * count_per_thread * incr + std::min(remain, gtid) * incr;
+        *upper = *lower + (count_per_thread + (gtid < remain ? 1 : 0)) * incr - 1;
+        *stride = incr;
+    }
 }
 
 void __kmpc_for_static_init_4u(void* /*loc*/, int32_t gtid, int32_t /*sched*/, int32_t* last, uint32_t* lower, uint32_t* upper, int32_t* /*stride*/, int32_t /*incr*/, int32_t /*chunk*/)

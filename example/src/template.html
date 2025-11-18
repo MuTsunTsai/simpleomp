@@ -5,8 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SimpleOMP Example Output</title>
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../demo.css">
+    <link rel="stylesheet" href="../assets/style.css">
+    <link rel="stylesheet" href="../assets/demo.css">
 </head>
 <body>
     <div class="container">
@@ -28,7 +28,7 @@
 
         <div class="output-section">
             <div class="output-label">Program Output:</div>
-            <textarea class="output-box" id="output" rows="20" readonly></textarea>
+            <div class="output-box" id="output"></textarea>
         </div>
 
         <div class="footer">
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <script type='text/javascript'>
+    <script>
         var statusElement = document.getElementById('status-text');
         var statusContainer = document.getElementById('status');
         var progressElement = document.getElementById('progress');
@@ -53,11 +53,26 @@
             print(...args) {
                 console.log(...args);
                 if (outputElement) {
-                    var text = args.join(' ');
-                    outputElement.value += text + "\n";
+					const div = document.createElement("div");
+					const text = args.join(' ');
+					if(text) div.innerText = text;
+					else div.appendChild(document.createElement("br"));
+					outputElement.appendChild(div);
                     outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
                 }
             },
+			printErr(...args) {
+				console.error(...args);
+				if (outputElement) {
+					const div = document.createElement("div");
+					div.style.color = "red";
+					const text = args.join(' ');
+					if(text) div.innerText = text;
+					else div.appendChild(document.createElement("br"));
+					outputElement.appendChild(div);
+                    outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
+                }
+			},
 			canvas: document.createElement("canvas"),
             setStatus(text) {
                 if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };

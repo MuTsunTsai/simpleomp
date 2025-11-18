@@ -8,10 +8,11 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Single Construct Demo ===" << endl << endl;
+	cout << "=== OpenMP Single Construct Demo ===" << endl
+		 << endl;
 
 	int initialization_value = 0;
-	int* shared_data = nullptr;
+	int *shared_data = nullptr;
 
 #pragma omp parallel num_threads(4)
 	{
@@ -28,7 +29,7 @@ int main() {
 			// Only ONE thread (whichever arrives first) executes this
 			initialization_value = 42;
 			shared_data = new int[10];
-			for (int i = 0; i < 10; i++) {
+			for(int i = 0; i < 10; i++) {
 				shared_data[i] = i * 10;
 			}
 			cout << ">>> Thread " << tid << ": Inside single block (initializing data) <<<" << endl;
@@ -56,7 +57,8 @@ int main() {
 		}
 	}
 
-	cout << endl << "Initialization completed successfully!" << endl;
+	cout << endl
+		 << "Initialization completed successfully!" << endl;
 	cout << "Final initialization_value: " << initialization_value << endl;
 	cout << "Shared data[5]: " << shared_data[5] << " (expected: 50)" << endl;
 

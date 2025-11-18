@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-01-18
+
+### Added
+- Support for OpenMP `schedule` clause with dynamic and guided scheduling strategies:
+  - **`schedule(dynamic [, chunk_size])`** - Dynamic work distribution
+    - Lock-free atomic chunk allocation using compare-and-swap operations
+    - Ideal for workloads with irregular iteration costs
+    - Configurable chunk size (defaults to 1)
+  - **`schedule(guided [, min_chunk])`** - Guided self-scheduling
+    - Exponentially decreasing chunk sizes for better load balancing
+    - Starts with `remaining_iterations / (2 * num_threads)`, decreases to `min_chunk`
+    - Balances overhead reduction with load distribution
+  - **`schedule(runtime)`** - Runtime schedule selection
+    - Reads scheduling strategy from `OMP_SCHEDULE` environment variable
+    - Supports formats: `"static,N"`, `"dynamic,N"`, `"guided,N"`
+    - Allows dynamic scheduling decisions without recompilation
+  - **`schedule(static, chunk_size)`** - Enhanced static chunked scheduling
+    - Round-robin chunk distribution across threads
+    - Proper support for arbitrary loop strides (not just `i++`)
+- New comprehensive example: [example/src/schedule.cpp](example/src/schedule.cpp)
+  - Demonstrates all scheduling strategies with visual iteration distribution
+  - Includes performance comparison between static, dynamic, and guided schedules
+
+### Technical Details
+- **New file**: [src/kmp_dispatch.cpp](src/kmp_dispatch.cpp) (~900 lines)
+  - Implements LLVM libomp dispatch ABI: `__kmpc_dispatch_init_*`, `__kmpc_dispatch_next_*`, `__kmpc_dispatch_deinit`
+  - Supports 4 integer types: `int32_t`, `uint32_t`, `int64_t`, `uint64_t`
+  - Uses deferred deletion pattern to prevent use-after-free in multi-threaded environments
+  - Generation counter mechanism to detect loop reinitialization and prevent race conditions
+  - Thread-local storage for tracking expected generation per thread
+  - Lock-free algorithms for dynamic chunk allocation with atomic operations
+  - Guided scheduling uses exponential decay formula: `chunk = max((upper - current) / (2 * num_threads), min_chunk)`
+- **Enhanced**: `__kmpc_for_static_init_4` in [src/simpleomp.cpp](src/simpleomp.cpp)
+  - Added support for `schedule(static, chunk)` with proper round-robin distribution
+  - Correctly handles arbitrary loop increments/decrements (stride parameter)
+  - Extracts base schedule type to ignore modifier flags
+
 ## [1.2.0] - 2025-01-17
 
 ### Added

@@ -8,7 +8,8 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Critical Construct Demo ===" << endl << endl;
+	cout << "=== OpenMP Critical Construct Demo ===" << endl
+		 << endl;
 
 	int shared_counter = 0;
 
@@ -17,7 +18,7 @@ int main() {
 		int tid = omp_get_thread_num();
 
 		// Without critical: race condition
-		for (int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 1000; i++) {
 #pragma omp critical
 			{
 				// Only one thread can execute this at a time
@@ -31,7 +32,8 @@ int main() {
 		}
 	}
 
-	cout << endl << "Final counter value: " << shared_counter << " (expected: 4000)" << endl;
+	cout << endl
+		 << "Final counter value: " << shared_counter << " (expected: 4000)" << endl;
 
 	return 0;
 }
