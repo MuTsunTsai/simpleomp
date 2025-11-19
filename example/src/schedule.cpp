@@ -229,7 +229,7 @@ void test_runtime_schedule() {
 }
 
 int main() {
-	cout << "=== OpenMP Schedule Clause Demo ===" << endl;
+	cout << "=== SimpleOMP Schedule Clause Demo ===" << endl;
 	cout << "This demo shows how different scheduling strategies assign"
 		 << endl;
 	cout << "iterations to threads. Output is deterministic and easy to verify."

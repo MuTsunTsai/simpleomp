@@ -8,7 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Master Construct Demo ===" << endl << endl;
+	cout << "=== SimpleOMP Master Construct Demo ===" << endl << endl;
 
 	int counter = 0;
 

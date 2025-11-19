@@ -124,6 +124,28 @@
 						</p>
 					</div>
 				</a>
+
+				<a href="demo/atomic.html" class="card text-decoration-none example-card">
+					<div class="card-body">
+						<h2 class="card-title h5 d-flex align-items-center text-primary mb-2">Atomic Operations</h2>
+						<p class="card-text text-secondary mb-0">
+							Shows <code>#pragma omp atomic</code> for thread-safe variable updates without explicit locks.
+							Demonstrates atomic add for integers and floating-point numbers, preventing race conditions
+							in concurrent updates.
+						</p>
+					</div>
+				</a>
+
+				<a href="demo/nowait.html" class="card text-decoration-none example-card">
+					<div class="card-body">
+						<h2 class="card-title h5 d-flex align-items-center text-primary mb-2">Nowait Clause</h2>
+						<p class="card-text text-secondary mb-0">
+							Demonstrates <code>nowait</code> clause to skip implicit barriers at the end of worksharing constructs.
+							Compare execution time and thread behavior with and without <code>nowait</code> on <code>single</code>
+							and <code>for</code> constructs.
+						</p>
+					</div>
+				</a>
 			</div>
 
 			<div class="mt-4 pt-3 border-top text-center text-secondary">

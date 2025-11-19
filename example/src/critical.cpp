@@ -8,7 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Critical Construct Demo ===" << endl << endl;
+	cout << "=== SimpleOMP Critical Construct Demo ===" << endl << endl;
 
 	int shared_counter = 0;
 

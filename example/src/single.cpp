@@ -8,7 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Single Construct Demo ===" << endl << endl;
+	cout << "=== SimpleOMP Single Construct Demo ===" << endl << endl;
 
 	int initialization_value = 0;
 	int *shared_data = nullptr;

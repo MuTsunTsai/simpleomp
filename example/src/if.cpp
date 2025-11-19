@@ -5,7 +5,7 @@ using namespace std;
 using namespace chrono;
 
 int main() {
-	cout << "=== OpenMP If Clause Demo ===" << endl << endl;
+	cout << "=== SimpleOMP If Clause Demo ===" << endl << endl;
 
 	int n = 100;
 

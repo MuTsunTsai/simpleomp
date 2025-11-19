@@ -29,7 +29,8 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 | `#pragma omp critical [(name)]` | ✅ | Critical section (mutual exclusion) |
 | `#pragma omp master` | ✅ | Master thread-only execution |
 | `#pragma omp single` | ✅ | Single thread execution |
-| `#pragma omp atomic` | ❌ | Atomic operations |
+| `#pragma omp atomic` | ⚠️ | Atomic operations (partial: add/sub/mul/div/and/or/xor/min/max/read/write; missing: capture) |
+| `#pragma omp ordered` | ❌ | Ordered execution within parallel loops |
 
 #### Work Sharing
 
@@ -38,15 +39,32 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 | `#pragma omp sections` | ❌ | Separate code sections |
 | `#pragma omp task` | ❌ | Task-based parallelism |
 
+#### Advanced Clauses
+
+| Directive/Clause | Status | Description |
+|------------------|--------|-------------|
+| `nowait` | ✅ | Skip implicit barrier at end of worksharing constructs (compiler-handled, no runtime support needed) |
+| `copyprivate(var)` | ❌ | Broadcast private variable from `single` to all threads |
+
 #### Data Environment
 
 | Directive/Clause | Status | Description |
 |------------------|--------|-------------|
 | `reduction(op:var)` | ❌ | Reduction operations |
-| `private(var)` | ❌ | Thread-private variables |
-| `shared(var)` | ❌ | Shared variables |
-| `firstprivate(var)` | ❌ | Initialize private from shared |
-| `lastprivate(var)` | ❌ | Update shared from last iteration |
+| `private(var)` | ❌ | Thread-private variables (compiler-handled) |
+| `shared(var)` | ❌ | Shared variables (compiler-handled) |
+| `firstprivate(var)` | ❌ | Initialize private from shared (compiler-handled) |
+| `lastprivate(var)` | ❌ | Update shared from last iteration (compiler-handled) |
+| `default(shared\|none)` | N/A | Default data-sharing attribute (compiler-only, no runtime support needed) |
+| `threadprivate` | ❌ | Thread-private global variables (requires deep compiler integration) |
+| `copyin(var)` | ❌ | Initialize threadprivate variables (depends on threadprivate) |
+
+#### Not Applicable to WebAssembly
+
+| Directive/Clause | Status | Description |
+|------------------|--------|-------------|
+| `#pragma omp flush` | 🚫 | Memory fence (WebAssembly atomics already provide memory ordering) |
+| `#pragma omp target` | 🚫 | Offload to accelerator devices (not applicable to Wasm environment) |
 
 
 ## Usage
@@ -92,6 +110,8 @@ The [example](example/) directory contains sample projects demonstrating SimpleO
 - **critical.cpp** - Critical section for mutual exclusion
 - **barrier.cpp** - Barrier synchronization example
 - **single.cpp** - Single thread execution construct
+- **atomic.cpp** - Atomic operations (add/sub/mul/div/and/or/xor/min/max/read/write)
+- **nowait.cpp** - Nowait clause demonstration (skipping implicit barriers)
 
 ```bash
 # Build all examples

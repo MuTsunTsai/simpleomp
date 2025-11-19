@@ -5,7 +5,7 @@ using namespace std;
 using namespace chrono;
 
 int main() {
-	cout << "=== OpenMP Parallel For Demo ===" << endl << endl;
+	cout << "=== SimpleOMP Parallel For Demo ===" << endl << endl;
 
 	// Large array for computation
 	vector<double> data(10000);

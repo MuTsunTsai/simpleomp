@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-01-19
+
+### Added
+- Support for OpenMP atomic operations (`#pragma omp atomic`):
+  - **Arithmetic operations**: `add`, `sub`, `mul`, `div` (integers and floating-point)
+  - **Bitwise operations**: `and`, `or`, `xor` (integer types only)
+  - **Comparison operations**: `min`, `max` (integers and floating-point)
+  - **Memory operations**: `read`, `write` (atomic load/store)
+  - **Type support**: 8/16/32/64-bit integers (signed/unsigned), `float`, `double`
+  - Example: [example/src/atomic.cpp](example/src/atomic.cpp)
+- Support for `nowait` clause (compiler-handled, demonstration example only):
+  - Allows skipping implicit barriers at the end of worksharing constructs
+  - Works with `#pragma omp for`, `#pragma omp single`, etc.
+  - Example: [example/src/nowait.cpp](example/src/nowait.cpp)
+
+### Technical Details
+- **New file**: [src/kmp_atomic.cpp](src/kmp_atomic.cpp) (~420 lines)
+  - Implements LLVM libomp atomic ABI functions for various operations and types
+  - **Integer operations**: Use native atomic `fetch_*` hardware instructions
+  - **Floating-point operations**: Use compare-and-swap (CAS) loops for non-native operations
+  - **Read/Write operations**: Use atomic `load`/`store` with sequential consistency
+  - Covers 32 functions: 8 operations × 4 types (int32/uint32/int64/uint64/float/double)
+  - Note: `atomic capture` is not yet implemented
+- **`nowait` clause**: Compiler-level feature requiring no runtime implementation
+  - Clang omits `__kmpc_barrier()` calls when `nowait` is present in LLVM IR
+  - SimpleOMP inherently supports this through existing barrier infrastructure
+  - Demonstration example shows performance benefits of skipping implicit barriers
+
 ## [1.3.0] - 2025-01-18
 
 ### Added
@@ -108,5 +136,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ring buffer task queue for efficient work distribution
 - Derived from Tencent NCNN threading implementation
 
+[1.4.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MuTsunTsai/simpleomp/releases/tag/v1.0.0

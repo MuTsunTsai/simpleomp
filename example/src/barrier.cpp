@@ -8,7 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Barrier Construct Demo ===" << endl << endl;
+	cout << "=== SimpleOMP Barrier Construct Demo ===" << endl << endl;
 
 	int phase1_complete = 0;
 	int phase2_complete = 0;
