@@ -8,8 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Critical Construct Demo ===" << endl
-		 << endl;
+	cout << "=== OpenMP Critical Construct Demo ===" << endl << endl;
 
 	int shared_counter = 0;
 
@@ -33,7 +32,8 @@ int main() {
 	}
 
 	cout << endl
-		 << "Final counter value: " << shared_counter << " (expected: 4000)" << endl;
+		 << "Final counter value: " << shared_counter << " (expected: 4000)"
+		 << endl;
 
 	return 0;
 }

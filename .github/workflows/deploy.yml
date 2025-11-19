@@ -39,16 +39,7 @@ jobs:
           emcc --version
           em++ --version
 
-      - name: Verify environment
-        run: |
-          echo "=== Checking all 'node' in PATH ==="
-          which -a node
-          echo "=== Checking Emscripten directory ==="
-          ls -la /home/runner/work/_temp/*/emsdk-main/upstream/emscripten/node* || echo "No node files in emscripten"
-          ls -la /home/runner/work/_temp/*/emsdk-main/node* || echo "No node files in emsdk"
-          echo "=== Testing node directly ==="
-          /opt/hostedtoolcache/node/20.19.5/x64/bin/node --version
-
+      # This is needed to resolve node conflict with Emscripten
       - name: Build library and examples
         run: |
           export PATH="/opt/hostedtoolcache/node/20.19.5/x64/bin:$PATH"

@@ -57,5 +57,9 @@ clean:
 
 .PHONY: with-examples
 with-examples: all
-	@echo [33mBuilding examples...[0m
-	@$(MAKE) -C example
+	@echo [33mBuilding examples...[0m
+	@$(MAKE) -C example --no-print-directory
+
+.PHONY: serve
+serve:
+	@pnpx statikk --coi example

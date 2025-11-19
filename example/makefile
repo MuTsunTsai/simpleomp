@@ -15,6 +15,8 @@ LDFLAGS :=\
 	-L../dist\
 	-lsimpleomp\
 	--proxy-to-worker\
+	-sFILESYSTEM=0\
+	-sEXIT_RUNTIME=1\
 	-sENVIRONMENT=worker\
 	-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency\
 	-sINITIAL_MEMORY=10MB
@@ -40,7 +42,7 @@ all: $(HTML)
 $(TARGET)/%.html: $(TEMP)/%.o makefile ../dist/libsimpleomp.a src/template.html $(wildcard src/%.js) src/%.cpp embed-code.js
 	$(MK)
 	@echo Compiling [33m$@[0m
-	@$(LINK.cc) $(USRFLAGS) -save-temps $(if $(wildcard src/$*.js),--pre-js src/$*.js) --shell-file src/template.html $< -o $@
+	@$(LINK.cc) $(USRFLAGS) -save-temps $(if $(wildcard src/$*.js),--pre-js src/$*.js) --post-js src/post.js --shell-file src/template.html $< -o $@
 	@node embed-code.js src/$*.cpp $@
 
 $(TEMP)/%.o: $(SRCF)/%.cpp
@@ -58,7 +60,3 @@ $(TEMP)/%.o: $(SRCF)/%.cpp
 .PHONY: clean
 clean:
 	@$(RM) "$(TEMP)"
-
-.PHONY: serve
-serve:
-	@pnpx statikk --coi

@@ -8,8 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Barrier Construct Demo ===" << endl
-		 << endl;
+	cout << "=== OpenMP Barrier Construct Demo ===" << endl << endl;
 
 	int phase1_complete = 0;
 	int phase2_complete = 0;
@@ -32,7 +31,9 @@ int main() {
 		// because barrier ensures all threads finished Phase 1
 #pragma omp critical
 		{
-			cout << "Thread " << tid << ": Phase 1 complete (count=" << phase1_complete << "), entering Phase 2" << endl;
+			cout << "Thread " << tid
+				 << ": Phase 1 complete (count=" << phase1_complete
+				 << "), entering Phase 2" << endl;
 			phase2_complete++;
 		}
 
@@ -42,12 +43,13 @@ int main() {
 		// Phase 3: Final synchronization check
 #pragma omp critical
 		{
-			cout << "Thread " << tid << ": Phase 2 complete (count=" << phase2_complete << ")" << endl;
+			cout << "Thread " << tid
+				 << ": Phase 2 complete (count=" << phase2_complete << ")"
+				 << endl;
 		}
 	}
 
-	cout << endl
-		 << "All phases completed successfully!" << endl;
+	cout << endl << "All phases completed successfully!" << endl;
 	cout << "Phase 1 count: " << phase1_complete << " (expected: 4)" << endl;
 	cout << "Phase 2 count: " << phase2_complete << " (expected: 4)" << endl;
 

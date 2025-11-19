@@ -26,7 +26,8 @@ int main() {
 		{
 			// Only master thread (thread 0) executes this
 			counter = 100;
-			cout << ">>> Thread " << tid << ": Inside master block (setting counter = 100) <<<" << endl;
+			cout << ">>> Thread " << tid
+				 << ": Inside master block (setting counter = 100) <<<" << endl;
 		}
 
 		// All threads execute this

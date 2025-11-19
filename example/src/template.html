@@ -5,7 +5,9 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>SimpleOMP Example Output</title>
+	<title>{{TITLE}}</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+		  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 	<link rel="stylesheet" href="../assets/style.css">
 	<link rel="stylesheet" href="../assets/demo.css">
 	<script>
@@ -13,53 +15,61 @@
 		if('serviceWorker' in navigator && location.hostname != "localhost") {
 			navigator.serviceWorker.register("../sw.js");
 			if(!sabAvailable) {
-				// Use location.reload() could lead to undesirable bfcache,
-				// so we use location.replace instead
 				const reloader = () => location.replace(location.href);
-				// We wait at least one second here, to avoid flashes
 				setTimeout(() => navigator.serviceWorker.ready.then(reloader), 1000);
 			}
 		}
 	</script>
 </head>
 
-<body>
-	<div class="container">
-		<div id="init" style="display: none;">
+<body class="p-3 p-md-5">
+	<div class="container p-4 p-md-5">
+		<div id="init" class="d-none">
 			Initializing... <span class="loader"></span>
 		</div>
 
-		<div id="main" style="display: none;">
-			<a href="../index.html" class="back-link">Back to Examples</a>
+		<div id="main" class="d-none">
+			<a href="../index.html" class="btn btn-outline-primary mb-3">
+				<span aria-hidden="true">← </span>Back to Examples
+			</a>
 
-			<h1>SimpleOMP Example</h1>
-			<p class="subtitle">Lightweight OpenMP for Emscripten</p>
+			<h1 class="text-center mb-4">{{TITLE}}</h1>
 
-			<div class="status-section">
-				<div class="status" id="status">
-					<span class="spinner" id="spinner"></span>
+			<div class="text-center mb-4">
+				<span class="badge bg-primary fs-6 px-3 py-2" id="status">
+					<span class="loader" id="spinner"></span>
 					<span id="status-text">Initializing...</span>
+				</span>
+			</div>
+
+			<div class="text-center mb-4">
+				<div class="progress" style="height: 20px; display: none;" id="progress-container">
+					<div class="progress-bar progress-bar-striped progress-bar-animated"
+						 role="progressbar"
+						 id="progress"
+						 style="width: 0%"
+						 aria-valuenow="0"
+						 aria-valuemin="0"
+						 aria-valuemax="100"></div>
 				</div>
 			</div>
 
-			<div class="progress-section">
-				<progress value="0" max="100" id="progress" hidden></progress>
+			<div class="mt-4">
+				<h2 class="h5 mb-3">Program Output:</h2>
+				<div class="output-box border rounded p-3" id="output">
+					<span class="loader" id="output-spinner"></span>
+				</div>
 			</div>
 
-			<div class="output-section">
-				<h2>Program Output:</h2>
-				<div class="output-box" id="output"></div>
+			<div id="sc-section" class="d-none mt-4">
+				<h2 class="h5 mb-3">Source Code:</h2>
+				<div id="code" class="d-block"></div>
 			</div>
 
-			<div id="sc-section" style="display: none;">
-				<h2>Source Code:</h2>
-				<code id="code"></code>
-			</div>
-
-			<div class="footer">
-				<p>
+			<div class="mt-4 pt-3 border-top text-center text-secondary">
+				<p class="mb-0">
 					Built with SimpleOMP |
-					<a href="https://github.com/MuTsunTsai/simpleomp" target="_blank">Learn More</a>
+					<a href="https://github.com/MuTsunTsai/simpleomp" target="_blank" class="text-primary text-decoration-none">Learn More</a>
 				</p>
 			</div>
 		</div>
@@ -71,48 +81,46 @@
 		const code = document.getElementById('code');
 		code.innerHTML = await codeToHtml("{{CODE}}", {
 			lang: 'cpp',
-			theme: 'material-theme-darker'
+			theme: 'dark-plus'
 		});
-		document.getElementById("sc-section").style.display = "block";
+		document.getElementById("sc-section").classList.remove("d-none");
 	</script>
 	<script>
 		// Display proper content
 		const divToShow = sabAvailable ? "main" : "init";
 		const div = document.getElementById(divToShow);
-		div.style.display = "block";
+		div.classList.remove("d-none");
 
 		var statusElement = document.getElementById('status-text');
 		var statusContainer = document.getElementById('status');
-		var progressElement = document.getElementById('progress');
+		var progressBar = document.getElementById('progress');
+		var progressContainer = document.getElementById('progress-container');
 		var spinnerElement = document.getElementById('spinner');
 		var outputElement = document.getElementById('output');
+		var outputSpinner = document.getElementById("output-spinner");
 
-		// Clear browser cache
-		if(outputElement) outputElement.value = '';
+		function addLine(text, color) {
+			if(outputElement) {
+				const div = document.createElement("div");
+				if(color) div.style.color = color;
+				if(text) div.innerText = text;
+				else div.appendChild(document.createElement("br"));
+				outputElement.insertBefore(div, outputSpinner);
+				outputElement.scrollTop = outputElement.scrollHeight;
+			}
+		}
 
 		var Module = {
 			print(...args) {
 				console.log(...args);
-				if(outputElement) {
-					const div = document.createElement("div");
-					const text = args.join(' ');
-					if(text) div.innerText = text;
-					else div.appendChild(document.createElement("br"));
-					outputElement.appendChild(div);
-					outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
-				}
+				addLine(args.join(' '));
 			},
 			printErr(...args) {
 				console.error(...args);
-				if(outputElement) {
-					const div = document.createElement("div");
-					div.style.color = "red";
-					const text = args.join(' ');
-					if(text) div.innerText = text;
-					else div.appendChild(document.createElement("br"));
-					outputElement.appendChild(div);
-					outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
-				}
+				addLine(args.join(' '), "red");
+			},
+			onCustomMessage() {
+				outputSpinner.style.display = "none";
 			},
 			canvas: document.createElement("canvas"),
 			setStatus(text) {
@@ -125,17 +133,16 @@
 				Module.setStatus.last.text = text;
 				if(m) {
 					text = m[1];
-					progressElement.value = parseInt(m[2]) * 100;
-					progressElement.max = parseInt(m[4]) * 100;
-					progressElement.hidden = false;
+					const percent = (parseInt(m[2]) / parseInt(m[4])) * 100;
+					progressBar.style.width = percent + '%';
+					progressBar.setAttribute('aria-valuenow', percent);
+					progressContainer.style.display = 'block';
 					spinnerElement.style.display = 'inline-block';
 				} else {
-					progressElement.value = null;
-					progressElement.max = null;
-					progressElement.hidden = true;
+					progressContainer.style.display = 'none';
 					if(!text) {
 						spinnerElement.style.display = 'none';
-						statusContainer.style.display = 'none';
+						statusContainer.classList.add('d-none');
 					}
 				}
 				statusElement.innerHTML = text;

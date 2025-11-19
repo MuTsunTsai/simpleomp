@@ -94,11 +94,8 @@ The [example](example/) directory contains sample projects demonstrating SimpleO
 - **single.cpp** - Single thread execution construct
 
 ```bash
-# Navigate to the example directory
-cd example
-
 # Build all examples
-make
+make with-examples
 
 # Start a local server to test (requires PNPM)
 make serve

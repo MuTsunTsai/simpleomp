@@ -8,8 +8,7 @@ extern "C" {
 }
 
 int main() {
-	cout << "=== OpenMP Single Construct Demo ===" << endl
-		 << endl;
+	cout << "=== OpenMP Single Construct Demo ===" << endl << endl;
 
 	int initialization_value = 0;
 	int *shared_data = nullptr;
@@ -32,7 +31,8 @@ int main() {
 			for(int i = 0; i < 10; i++) {
 				shared_data[i] = i * 10;
 			}
-			cout << ">>> Thread " << tid << ": Inside single block (initializing data) <<<" << endl;
+			cout << ">>> Thread " << tid
+				 << ": Inside single block (initializing data) <<<" << endl;
 		}
 
 		// Implicit barrier at end of single construct ensures
@@ -41,13 +41,16 @@ int main() {
 		// All threads execute this
 #pragma omp critical
 		{
-			cout << "Thread " << tid << ": After single block (initialization_value=" << initialization_value << ")" << endl;
+			cout << "Thread " << tid
+				 << ": After single block (initialization_value="
+				 << initialization_value << ")" << endl;
 		}
 
 		// Demonstrate another single construct
 #pragma omp single
 		{
-			cout << ">>> Thread " << tid << ": Inside second single block <<<" << endl;
+			cout << ">>> Thread " << tid << ": Inside second single block <<<"
+				 << endl;
 		}
 
 		// All threads execute this
@@ -57,8 +60,7 @@ int main() {
 		}
 	}
 
-	cout << endl
-		 << "Initialization completed successfully!" << endl;
+	cout << endl << "Initialization completed successfully!" << endl;
 	cout << "Final initialization_value: " << initialization_value << endl;
 	cout << "Shared data[5]: " << shared_data[5] << " (expected: 50)" << endl;
 

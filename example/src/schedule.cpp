@@ -10,9 +10,12 @@ extern "C" {
 }
 
 void test_static_schedule() {
-	cout << "\n=== Static Schedule (chunk_size=3) ===" << endl;
-	cout << "Expected: Each thread gets contiguous chunks of 3 iterations" << endl;
-	cout << "Thread assignment pattern should be: 0,0,0,1,1,1,2,2,2,3,3,3,0,0,0..." << endl;
+	cout << "\n== Static Schedule (chunk_size=3) ==" << endl;
+	cout << "Expected: Each thread gets contiguous chunks of 3 iterations"
+		 << endl;
+	cout << "Thread assignment pattern should be: "
+			"0,0,0,1,1,1,2,2,2,3,3,3,0,0,0..."
+		 << endl;
 
 	vector<int> assignment(20, -1);
 
@@ -30,8 +33,9 @@ void test_static_schedule() {
 }
 
 void test_dynamic_schedule() {
-	cout << "\n=== Dynamic Schedule (chunk_size=2) ===" << endl;
-	cout << "Expected: Threads dynamically request chunks of 2 iterations" << endl;
+	cout << "\n== Dynamic Schedule (chunk_size=2) ==" << endl;
+	cout << "Expected: Threads dynamically request chunks of 2 iterations"
+		 << endl;
 	cout << "Order depends on which thread finishes first (may vary)" << endl;
 
 	vector<int> assignment(20, -1);
@@ -49,7 +53,8 @@ void test_dynamic_schedule() {
 
 #pragma omp parallel for schedule(dynamic, 2) num_threads(4)
 	for(int i = 0; i < 20; i++) {
-		// More substantial computation to ensure threads have time to participate
+		// More substantial computation to ensure threads have time to
+		// participate
 		volatile int dummy = 0;
 		for(int j = 0; j < 50000; j++) {
 			dummy += j;
@@ -81,21 +86,26 @@ void test_dynamic_schedule() {
 	}
 	cout << (all_participated ? "PASS" : "FAIL") << endl;
 
-	// Note: Dynamic scheduling allows threads to claim multiple consecutive chunks,
-	// so we don't verify chunk boundaries - only that work is distributed
+	// Note: Dynamic scheduling allows threads to claim multiple consecutive
+	// chunks, so we don't verify chunk boundaries - only that work is
+	// distributed
 }
 
 void test_guided_schedule() {
-	cout << "\n=== Guided Schedule (min_chunk=2) ===" << endl;
-	cout << "Expected: Chunk size decreases exponentially (starts large, ends at min 2)" << endl;
-	cout << "With 4 threads and 40 iterations: first chunk ≈ 40/(2*4) = 5" << endl;
+	cout << "\n== Guided Schedule (min_chunk=2) ==" << endl;
+	cout << "Expected: Chunk size decreases exponentially (starts large, ends "
+			"at min 2)"
+		 << endl;
+	cout << "With 4 threads and 40 iterations: first chunk ≈ 40/(2*4) = 5"
+		 << endl;
 
 	vector<int> assignment(40, -1);
 	vector<int> chunk_sizes;
 
 #pragma omp parallel for schedule(guided, 2) num_threads(4)
 	for(int i = 0; i < 40; i++) {
-		// More substantial computation to ensure threads have time to participate
+		// More substantial computation to ensure threads have time to
+		// participate
 		volatile int dummy = 0;
 		for(int j = 0; j < 50000; j++) {
 			dummy += j;
@@ -148,9 +158,11 @@ void test_guided_schedule() {
 }
 
 void test_default_static() {
-	cout << "\n=== Default Static Schedule (no chunk_size) ===" << endl;
-	cout << "Expected: 20 iterations divided equally among 4 threads (5 each)" << endl;
-	cout << "Thread assignment: 0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3" << endl;
+	cout << "\n== Default Static Schedule (no chunk_size) ==" << endl;
+	cout << "Expected: 20 iterations divided equally among 4 threads (5 each)"
+		 << endl;
+	cout << "Thread assignment: 0,0,0,0,0,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3"
+		 << endl;
 
 	vector<int> assignment(20, -1);
 
@@ -169,16 +181,19 @@ void test_default_static() {
 
 void test_runtime_schedule() {
 	const char *env = getenv("OMP_SCHEDULE");
-	cout << "\n=== Runtime Schedule (OMP_SCHEDULE environment variable) ===" << endl;
+	cout << "\n== Runtime Schedule (OMP_SCHEDULE environment variable) =="
+		 << endl;
 	cout << "Expected: Behavior depends on OMP_SCHEDULE setting" << endl;
 	cout << "Current setting: OMP_SCHEDULE=" << env << endl;
-	cout << "This should behave like dynamic scheduling with chunk size 1" << endl;
+	cout << "This should behave like dynamic scheduling with chunk size 1"
+		 << endl;
 
 	vector<int> assignment(20, -1);
 
 #pragma omp parallel for schedule(runtime) num_threads(4)
 	for(int i = 0; i < 20; i++) {
-		// More substantial computation to ensure threads have time to participate
+		// More substantial computation to ensure threads have time to
+		// participate
 		volatile int dummy = 0;
 		for(int j = 0; j < 50000; j++) {
 			dummy += j;
@@ -208,13 +223,17 @@ void test_runtime_schedule() {
 			break;
 		}
 	}
-	cout << (all_participated ? "PASS - All 4 threads participated" : "FAIL - Some threads did not participate") << endl;
+	cout << (all_participated ? "PASS - All 4 threads participated"
+							  : "FAIL - Some threads did not participate")
+		 << endl;
 }
 
 int main() {
 	cout << "=== OpenMP Schedule Clause Demo ===" << endl;
-	cout << "This demo shows how different scheduling strategies assign" << endl;
-	cout << "iterations to threads. Output is deterministic and easy to verify." << endl;
+	cout << "This demo shows how different scheduling strategies assign"
+		 << endl;
+	cout << "iterations to threads. Output is deterministic and easy to verify."
+		 << endl;
 
 	test_default_static();
 	test_static_schedule();
@@ -225,9 +244,13 @@ int main() {
 	cout << "\n=== Demo Complete ===" << endl;
 	cout << "\nKey Observations:" << endl;
 	cout << "- Static: Predictable, contiguous chunks" << endl;
-	cout << "- Dynamic: Flexible assignment based on thread availability" << endl;
-	cout << "- Guided: Large chunks first, then smaller (reduces overhead)" << endl;
-	cout << "- Runtime: Behavior determined by OMP_SCHEDULE environment variable" << endl;
+	cout << "- Dynamic: Flexible assignment based on thread availability"
+		 << endl;
+	cout << "- Guided: Large chunks first, then smaller (reduces overhead)"
+		 << endl;
+	cout
+		<< "- Runtime: Behavior determined by OMP_SCHEDULE environment variable"
+		<< endl;
 
 	return 0;
 }

@@ -5,8 +5,7 @@ using namespace std;
 using namespace chrono;
 
 int main() {
-	cout << "=== OpenMP If Clause Demo ===" << endl
-			  << endl;
+	cout << "=== OpenMP If Clause Demo ===" << endl << endl;
 
 	int n = 100;
 
@@ -18,8 +17,8 @@ int main() {
 	}
 	auto end = high_resolution_clock::now();
 	auto time = duration_cast<milliseconds>(end - start).count();
-	cout << "n=100 (serial): "
-			  << time << " ms (" << time / 100.0 << "ms per iteration)" << endl;
+	cout << "n=100 (serial): " << time << " ms (" << time / 100.0
+		 << "ms per iteration)" << endl;
 
 	// Test 2: n=5000, should execute in parallel
 	n = 5000;
@@ -30,8 +29,8 @@ int main() {
 	}
 	end = high_resolution_clock::now();
 	time = duration_cast<milliseconds>(end - start).count();
-	cout << "n=5000 (parallel): "
-			  << time << " ms (" << time / 5000.0 << "ms per iteration)" << endl;
+	cout << "n=5000 (parallel): " << time << " ms (" << time / 5000.0
+		 << "ms per iteration)" << endl;
 
 	return 0;
 }

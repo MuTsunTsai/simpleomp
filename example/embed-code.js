@@ -15,47 +15,30 @@ const cppFile = process.argv[2];
 const htmlFile = process.argv[3];
 
 try {
-	console.log(`[embed-code] Processing: ${cppFile} -> ${htmlFile}`);
-
-	// Check if files exist and are accessible
-	if (!fs.existsSync(cppFile)) {
-		throw new Error(`C++ file not found: ${cppFile}`);
-	}
-	if (!fs.existsSync(htmlFile)) {
-		throw new Error(`HTML file not found: ${htmlFile}`);
-	}
-
-	// Check permissions
-	try {
-		fs.accessSync(cppFile, fs.constants.R_OK);
-		fs.accessSync(htmlFile, fs.constants.R_OK | fs.constants.W_OK);
-	} catch (err) {
-		throw new Error(`Permission denied: ${err.message}`);
-	}
-
 	// Read C++ source code
 	let cppContent = fs.readFileSync(cppFile, 'utf8');
-	console.log(`[embed-code] Read ${cppContent.length} bytes from ${cppFile}`);
+
+	const title = cppContent.match(/=== ([^\n]+)? ===/)?.[1];
 
 	// escape the content
 	cppContent = cppContent
+		.replace(/\\/g, "\\\\")
 		.replace(/"/g, '\\"')
 		.replace(/\r/g, "")
 		.replace(/\n/g, '\\n');
 
 	// Read HTML file
 	let htmlContent = fs.readFileSync(htmlFile, 'utf8');
-	console.log(`[embed-code] Read ${htmlContent.length} bytes from ${htmlFile}`);
 
 	// Replace {{CODE}} with the escaped C++ content
-	htmlContent = htmlContent.replace('{{CODE}}', cppContent);
+	htmlContent = htmlContent
+		.replace('{{CODE}}', cppContent)
+		.replaceAll('{{TITLE}}', title ?? "SimpleOMP Example");
 
 	// Write back to HTML file
 	fs.writeFileSync(htmlFile, htmlContent, 'utf8');
-	console.log(`[embed-code] Successfully embedded code into ${htmlFile}`);
 
 } catch (error) {
-	console.error('[embed-code] Error:', error.message);
-	console.error('[embed-code] Stack:', error.stack);
+	console.error('Error:', error.message);
 	process.exit(1);
 }
