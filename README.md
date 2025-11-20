@@ -30,6 +30,8 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 | `#pragma omp master` | ✅ | Master thread-only execution |
 | `#pragma omp single` | ✅ | Single thread execution |
 | `#pragma omp atomic` | ⚠️ | Atomic operations (partial: add/sub/mul/div/and/or/xor/min/max/read/write; missing: capture) |
+| `#pragma omp cancel` | ✅ | Request cancellation of parallel regions or loops (controlled by `OMP_CANCELLATION`) |
+| `#pragma omp cancellation point` | ✅ | Check for cancellation requests |
 | `#pragma omp ordered` | ❌ | Ordered execution within parallel loops |
 
 #### Work Sharing
@@ -85,11 +87,17 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 
 ```bash
 # Basic usage (pragma directives only)
-emcc your_code.c -fopenmp -pthread libsimpleomp.a -o output.js
+emcc your_code.c -fopenmp -pthread \
+  -sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency \
+  libsimpleomp.a -o output.js
 
 # With OpenMP Runtime API (using omp.h)
-emcc your_code.c -I/path/to/include -fopenmp -pthread libsimpleomp.a -o output.js
+emcc your_code.c -I/path/to/include -fopenmp -pthread \
+  -sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency \
+  libsimpleomp.a -o output.js
 ```
+
+**⚠️ IMPORTANT:** You **MUST** include the `-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency` flag when linking. SimpleOMP creates a worker thread pool sized to match the number of logical CPU cores. Without this flag, Emscripten's default pthread pool size will be insufficient, causing runtime errors.
 
 For a complete working example, see the [example](example/) directory.
 

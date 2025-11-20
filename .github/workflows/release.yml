@@ -79,16 +79,20 @@ jobs:
             Download `libsimpleomp.a` and link it when building your Emscripten project:
 
             ```bash
-            emcc your_code.c -fopenmp -pthread libsimpleomp.a -o output.js
+            emcc your_code.c -fopenmp -pthread \
+              -sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency \
+              libsimpleomp.a -o output.js
             ```
 
             Optionally, download `omp.h` to use the OpenMP Runtime API:
 
             ```bash
-            emcc your_code.c -I/path/to/include -fopenmp -pthread libsimpleomp.a -o output.js
+            emcc your_code.c -I/path/to/include -fopenmp -pthread \
+              -sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency \
+              libsimpleomp.a -o output.js
             ```
 
-            See the [README](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/README.md) for more details.
+            **⚠️ IMPORTANT:** You **MUST** include the `-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency` flag. See the [README](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/README.md) for more details.
           files: |
             dist/libsimpleomp.a
             include/omp.h
