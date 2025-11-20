@@ -16,14 +16,12 @@ int main() {
 		data[i] = static_cast<double>(i) * 0.5;
 	}
 
-	int n_threads = 16;
-
 	// Start timing
 	auto start = high_resolution_clock::now();
 
 // Compute-intensive operation: calculate complex mathematical expressions
 // Each iteration performs multiple floating-point operations
-#pragma omp parallel for num_threads(n_threads)
+#pragma omp parallel for
 	for(int i = 0; i < 10000; i++) {
 		double temp = data[i];
 		// Perform heavy computation: polynomial evaluation

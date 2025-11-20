@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2025-01-20
+
+### Fixed
+- **Default thread count behavior**: Changed `omp_get_num_threads()` to return the number of CPU cores when not explicitly set, instead of defaulting to 1 (serial execution). This aligns with the OpenMP standard specification where the implementation should default to the number of available processors.
+  - Previous behavior: `#pragma omp parallel for` without `num_threads()` used only 1 thread
+  - New behavior: Defaults to `navigator.hardwareConcurrency` (number of logical CPU cores)
+  - Users can still override with `omp_set_num_threads()` or `num_threads(N)` clause
+
+### Documentation
+- **CRITICAL**: Added explicit warnings in README.md and GitHub Release template about the requirement to use `-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency` when linking
+  - SimpleOMP creates a worker thread pool sized to match CPU core count at initialization
+  - Without this flag, Emscripten's default pthread pool size may be insufficient, causing runtime errors
+  - This is a fundamental architectural constraint due to how SimpleOMP pre-allocates worker threads
+
 ## [1.5.0] - 2025-01-20
 
 ### Added

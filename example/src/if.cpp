@@ -11,7 +11,7 @@ int main() {
 
 	// Test 1: n=100, should execute serially
 	auto start = high_resolution_clock::now();
-#pragma omp parallel for if(n > 1000) num_threads(8)
+#pragma omp parallel for if(n > 1000)
 	for(int i = 0; i < 100000000; i++) {
 		volatile int x = i * i;
 	}
@@ -23,7 +23,7 @@ int main() {
 	// Test 2: n=5000, should execute in parallel
 	n = 5000;
 	start = high_resolution_clock::now();
-#pragma omp parallel for if(n > 1000) num_threads(8)
+#pragma omp parallel for if(n > 1000)
 	for(int i = 0; i < 100000000; i++) {
 		volatile int x = i * i;
 	}

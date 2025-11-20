@@ -316,7 +316,12 @@ void omp_set_num_threads(int num_threads)
 
 int omp_get_num_threads()
 {
-    return std::max((int)reinterpret_cast<size_t>(tls_num_threads.get()), 1);
+    int tls_value = (int)reinterpret_cast<size_t>(tls_num_threads.get());
+    // If not explicitly set, default to the number of CPU cores (OpenMP standard behavior)
+    if (tls_value == 0) {
+        return ncnn::get_cpu_count();
+    }
+    return tls_value;
 }
 
 int omp_get_thread_num()
