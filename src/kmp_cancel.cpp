@@ -14,8 +14,9 @@
 
 #define DEBUG_CANCEL 0
 
-// Forward declaration
+// Forward declarations
 extern "C" int omp_get_cancellation(void);
+extern "C" void __kmpc_barrier(void* loc, int32_t gtid);
 
 #ifdef __cplusplus
 extern "C" {
@@ -190,7 +191,6 @@ int __kmpc_cancel_barrier(void* loc, int gtid)
     #endif
 
     // Otherwise, perform normal barrier
-    extern void __kmpc_barrier(void* loc, int gtid);
     __kmpc_barrier(loc, gtid);
 
     #if DEBUG_CANCEL

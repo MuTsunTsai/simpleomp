@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-01-20
+
+### Added
+- Support for OpenMP reduction operations (`#pragma omp reduction`):
+  - **Reduction clause**: `reduction(operator:variable)` for parallel accumulation
+  - **Arithmetic operators**: `+` (sum), `*` (product), `-` (difference)
+  - **Bitwise operators**: `&` (bitwise AND), `|` (bitwise OR), `^` (bitwise XOR)
+  - **Logical operators**: `&&` (logical AND), `||` (logical OR)
+  - **Comparison operators**: `min` (minimum), `max` (maximum)
+  - **Works with**: `#pragma omp parallel for reduction(+:sum)`
+  - **Support for `nowait`**: `reduction` clause can be combined with `nowait` to skip implicit barrier
+  - Example: [example/src/reduction.cpp](example/src/reduction.cpp)
+
+### Technical Details
+- **New file**: [src/kmp_reduce.cpp](src/kmp_reduce.cpp) (~200 lines)
+  - Implements `__kmpc_reduce()`, `__kmpc_reduce_nowait()`, `__kmpc_end_reduce()`, `__kmpc_end_reduce_nowait()`
+  - Uses atomic operation method (returns 2) to delegate reduction to compiler-generated atomic instructions
+  - Thread-local storage maintains per-thread copies of reduction variables
+  - Compiler generates code to perform atomic updates on shared reduction variable
+  - Supports all standard OpenMP reduction operators
+  - Properly handles both blocking (with barrier) and non-blocking (nowait) variants
+
+### Documentation
+- Added **Known Limitations** section to README.md:
+  - **Nested parallelism not supported**: Documented that SimpleOMP does not support nested `#pragma omp parallel` regions
+  - Explained the architectural constraint (single global thread pool)
+  - Provided code example showing unsupported usage pattern
+  - Listed OpenMP Runtime API functions related to nesting that are provided as stubs
+  - Suggested workaround: restructure algorithms to avoid nested parallelism
+
 ## [1.5.1] - 2025-01-20
 
 ### Fixed
@@ -203,6 +233,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ring buffer task queue for efficient work distribution
 - Derived from Tencent NCNN threading implementation
 
+[1.6.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.5.1...v1.6.0
+[1.5.1]: https://github.com/MuTsunTsai/simpleomp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.2.0...v1.3.0

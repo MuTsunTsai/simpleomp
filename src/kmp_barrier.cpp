@@ -45,14 +45,14 @@ extern "C" {
 
 // Barrier implementation for Clang/LLVM libomp ABI
 // All threads in a team must call this function to synchronize
-int32_t __kmpc_barrier(void* loc, int32_t gtid)
+void __kmpc_barrier(void* loc, int32_t gtid)
 {
     int num_threads = omp_get_num_threads();
 
     // Single-threaded case: no barrier needed
     if (num_threads == 1)
     {
-        return 0;
+        return;
     }
 
     int thread_num = omp_get_thread_num();
@@ -129,8 +129,6 @@ int32_t __kmpc_barrier(void* loc, int32_t gtid)
 
         ncnn::barrier_map_lock.unlock();
     }
-
-    return 0;
 }
 
 #ifdef __cplusplus

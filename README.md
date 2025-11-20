@@ -52,7 +52,7 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 
 | Directive/Clause | Status | Description |
 |------------------|--------|-------------|
-| `reduction(op:var)` | ❌ | Reduction operations |
+| `reduction(op:var)` | ✅ | Reduction operations (supports +, *, -, &, \|, ^, &&, \|\|, min, max) |
 | `private(var)` | ✅ | Thread-private variables (compiler-handled, no runtime support needed) |
 | `shared(var)` | ✅ | Shared variables (compiler-handled, no runtime support needed) |
 | `firstprivate(var)` | ✅ | Initialize private from shared (compiler-handled, no runtime support needed) |
@@ -68,6 +68,33 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 | `#pragma omp flush` | 🚫 | Memory fence (WebAssembly atomics already provide memory ordering) |
 | `#pragma omp target` | 🚫 | Offload to accelerator devices (not applicable to Wasm environment) |
 
+### Known Limitations
+
+#### Nested Parallelism
+
+**Nested parallel regions are NOT supported.** SimpleOMP uses a single global thread pool architecture and does not support hierarchical team structures. Attempting to use nested `#pragma omp parallel` will result in undefined behavior (potential deadlock or serialization of inner regions).
+
+```cpp
+// ❌ NOT SUPPORTED
+#pragma omp parallel num_threads(4)
+{
+    // Outer parallel region: 4 threads
+    #pragma omp parallel num_threads(2)
+    {
+        // Inner parallel region: This will cause issues!
+    }
+}
+```
+
+**Workaround:** Restructure your algorithm to avoid nested parallelism, or flatten the parallel structure into a single level.
+
+The following OpenMP Runtime API functions related to nested parallelism are provided as stubs that always return fixed values:
+- `omp_set_nested()` / `omp_get_nested()` - Always reports nested parallelism as disabled
+- `omp_set_max_active_levels()` / `omp_get_max_active_levels()` - Always reports 1 active level
+- `omp_get_level()` - Always returns 0 (not inside a parallel region) or 1 (inside a parallel region)
+- `omp_get_active_level()` - Same as `omp_get_level()`
+- `omp_get_ancestor_thread_num(level)` - Only works for level 0 or 1
+- `omp_get_team_size(level)` - Only works for level 0 or 1
 
 ## Usage
 
@@ -127,6 +154,7 @@ The [example](example/) directory contains sample projects demonstrating SimpleO
 - **locks.cpp** - OpenMP lock API demonstration (simple and nestable locks)
 - **data_sharing.cpp** - Data-sharing clauses (private/shared/firstprivate/lastprivate)
 - **cancel.cpp** - Cancellation constructs for early termination of parallel regions
+- **reduction.cpp** - Reduction operations (sum, product, min/max, logical, bitwise)
 
 ```bash
 # Build all examples
