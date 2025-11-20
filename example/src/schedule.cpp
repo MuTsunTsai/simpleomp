@@ -1,13 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <omp.h>
 
 using namespace std;
-
-// Declare required OpenMP functions to avoid including omp.h
-extern "C" {
-	int omp_get_thread_num();
-	int omp_get_num_threads();
-}
 
 void test_static_schedule() {
 	cout << "\n== Static Schedule (chunk_size=3) ==" << endl;

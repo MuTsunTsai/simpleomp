@@ -4,10 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-
-// Forward declarations of OpenMP runtime functions
-extern "C" int omp_get_thread_num();
-extern "C" int omp_get_num_threads();
+#include <omp.h>
 
 // Helper function to simulate work
 void simulate_work(int ms) {
@@ -17,7 +14,7 @@ void simulate_work(int ms) {
 int main() {
 	const int num_threads = 4;
 
-	std::cout << "=== OpenMP nowait Clause Demonstration ===" << std::endl;
+	std::cout << "=== SimpleOMP nowait Clause Demonstration ===" << std::endl;
 	std::cout << "This demo shows the difference between constructs with and "
 				 "without nowait."
 			  << std::endl;

@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-01-20
+
+### Added
+- Support for OpenMP cancellation constructs:
+  - **`#pragma omp cancel`** - Request cancellation of parallel regions or loops
+    - Supports cancellation types: `parallel`, `for`, `sections`, `taskgroup`
+    - Cancellation propagates to all threads in the same team
+    - Returns boolean indicating whether the thread should terminate
+  - **`#pragma omp cancellation point`** - Check for cancellation requests
+    - Allows threads to respond to cancellation requests at specific points
+    - Essential for implementing early termination in parallel algorithms
+  - **Environment control**: `OMP_CANCELLATION` environment variable (default: enabled)
+  - Example: [example/src/cancel.cpp](example/src/cancel.cpp)
+- OpenMP Runtime Library API header file:
+  - **New header**: [include/omp.h](include/omp.h) - Standard OpenMP API declarations (OpenMP 5.0 compliant)
+  - **New implementation**: [src/omp_runtime.cpp](src/omp_runtime.cpp)
+  - **Thread management**: `omp_set_num_threads()`, `omp_get_num_threads()`, `omp_get_thread_num()`, `omp_get_num_procs()`, etc.
+  - **Lock mechanisms**: Full implementation of `omp_lock_t` and `omp_nest_lock_t` using `ncnn::Mutex`
+  - **Timing functions**: `omp_get_wtime()`, `omp_get_wtick()` using Emscripten high-resolution timers
+  - **Schedule control**: `omp_set_schedule()`, `omp_get_schedule()`
+  - **Hierarchy queries**: `omp_get_level()`, `omp_get_ancestor_thread_num()`, `omp_get_team_size()`, etc.
+  - **Stub implementations**: Specification-compliant stubs for unsupported features (affinity, etc.)
+  - Example: [example/src/locks.cpp](example/src/locks.cpp)
+- Data-sharing clauses demonstration:
+  - **New example**: [example/src/data_sharing.cpp](example/src/data_sharing.cpp)
+  - Demonstrates `private`, `shared`, `firstprivate`, `lastprivate` clauses
+  - Shows how Clang handles variable scoping at compile-time
+  - Educational example explaining compiler-level vs runtime-level features
+
+### Technical Details
+- **New file**: [src/kmp_cancel.cpp](src/kmp_cancel.cpp) (~150 lines)
+  - Implements `__kmpc_cancel()`, `__kmpc_cancellation_point()`, `__kmpc_cancel_barrier()`
+  - Uses global map to track cancellation state per team
+  - Thread-safe cancellation flag management with atomic operations
+  - Supports all OpenMP cancellation construct types via bitmask flags
+  - Environment variable control: reads `OMP_CANCELLATION` at runtime (defaults to "true")
+- **New file**: [include/omp.h](include/omp.h) (~200 lines)
+  - Complete OpenMP API declarations following OpenMP 5.0 specification
+  - Type definitions: `omp_lock_t`, `omp_nest_lock_t`, `omp_sched_t`, etc.
+  - Function declarations for all standard OpenMP runtime functions
+  - Replaces need for manual `extern "C"` declarations in user code
+- **New file**: [src/omp_runtime.cpp](src/omp_runtime.cpp) (~400 lines)
+  - Implements all OpenMP runtime API functions
+  - Lock types use internal `ncnn::Mutex` with proper nesting support
+  - Timing functions use `emscripten_get_now()` for microsecond precision
+  - Hierarchy functions support nested parallel regions (currently 1 level)
+  - Provides informative stubs for features not yet implemented
+- **Example enhancement**: [example/src/data_sharing.cpp](example/src/data_sharing.cpp)
+  - Comprehensive demonstration of all data-sharing clause behaviors
+  - Shows memory addresses to illustrate private vs shared variables
+  - Documents which clauses are compiler-handled vs runtime-handled
+  - Clarifies common misconceptions about OpenMP variable scoping
+
 ## [1.4.0] - 2025-01-19
 
 ### Added
@@ -136,6 +189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ring buffer task queue for efficient work distribution
 - Derived from Tencent NCNN threading implementation
 
+[1.5.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.1.0...v1.2.0

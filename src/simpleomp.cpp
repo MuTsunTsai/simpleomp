@@ -5,8 +5,8 @@
 
 #if NCNN_SIMPLEOMP
 
-#include "simpleomp.h"
 #include "cpu.h" // ncnn::get_cpu_count()
+#include <algorithm>
 
 #include <stdio.h>
 #include <stdlib.h>

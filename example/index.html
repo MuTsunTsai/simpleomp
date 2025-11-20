@@ -146,6 +146,39 @@
 						</p>
 					</div>
 				</a>
+
+				<a href="demo/locks.html" class="card text-decoration-none example-card">
+					<div class="card-body">
+						<h2 class="card-title h5 d-flex align-items-center text-primary mb-2">OpenMP Locks</h2>
+						<p class="card-text text-secondary mb-0">
+							Demonstrates OpenMP lock API: <code>omp_lock_t</code> for simple locks and <code>omp_nest_lock_t</code>
+							for nestable locks. Shows both blocking (<code>omp_set_lock</code>) and non-blocking
+							(<code>omp_test_lock</code>) lock acquisition patterns.
+						</p>
+					</div>
+				</a>
+
+				<a href="demo/data_sharing.html" class="card text-decoration-none example-card">
+					<div class="card-body">
+						<h2 class="card-title h5 d-flex align-items-center text-primary mb-2">Data-Sharing Clauses</h2>
+						<p class="card-text text-secondary mb-0">
+							Demonstrates <code>private</code>, <code>shared</code>, <code>firstprivate</code>, and <code>lastprivate</code>
+							clauses. Shows how variables are scoped and shared between threads in parallel regions and loops.
+							All these clauses are compiler-handled with no runtime overhead.
+						</p>
+					</div>
+				</a>
+
+				<a href="demo/cancel.html" class="card text-decoration-none example-card">
+					<div class="card-body">
+						<h2 class="card-title h5 d-flex align-items-center text-primary mb-2">Cancellation</h2>
+						<p class="card-text text-secondary mb-0">
+							Shows <code>#pragma omp cancel</code> and <code>#pragma omp cancellation point</code> for early termination
+							of parallel regions and loops. Demonstrates parallel search that stops all threads once the target is found,
+							and error handling that cancels remaining work.
+						</p>
+					</div>
+				</a>
 			</div>
 
 			<div class="mt-4 pt-3 border-top text-center text-secondary">

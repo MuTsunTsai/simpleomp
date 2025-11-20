@@ -51,11 +51,11 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 | Directive/Clause | Status | Description |
 |------------------|--------|-------------|
 | `reduction(op:var)` | ❌ | Reduction operations |
-| `private(var)` | ❌ | Thread-private variables (compiler-handled) |
-| `shared(var)` | ❌ | Shared variables (compiler-handled) |
-| `firstprivate(var)` | ❌ | Initialize private from shared (compiler-handled) |
-| `lastprivate(var)` | ❌ | Update shared from last iteration (compiler-handled) |
-| `default(shared\|none)` | N/A | Default data-sharing attribute (compiler-only, no runtime support needed) |
+| `private(var)` | ✅ | Thread-private variables (compiler-handled, no runtime support needed) |
+| `shared(var)` | ✅ | Shared variables (compiler-handled, no runtime support needed) |
+| `firstprivate(var)` | ✅ | Initialize private from shared (compiler-handled, no runtime support needed) |
+| `lastprivate(var)` | ✅ | Update shared from last iteration (compiler-handled, no runtime support needed) |
+| `default(shared\|none)` | ✅ | Default data-sharing attribute (compiler-only, no runtime support needed) |
 | `threadprivate` | ❌ | Thread-private global variables (requires deep compiler integration) |
 | `copyin(var)` | ❌ | Initialize threadprivate variables (depends on threadprivate) |
 
@@ -77,14 +77,18 @@ SimpleOMP provides a minimal OpenMP runtime for Emscripten-compiled projects. Th
 ### Installation
 
 1. Download `libsimpleomp.a` from the [releases](../../releases) page
-2. Link the library when building your project
-3. Add the following compilation flags: `-fopenmp -pthread`
+2. (Optional) Download `omp.h` if you need to use OpenMP Runtime API functions (e.g., `omp_get_thread_num()`, `omp_set_num_threads()`, locks, timing functions)
+3. Link the library when building your project
+4. Add the following compilation flags: `-fopenmp -pthread`
 
 ### Example
 
 ```bash
-# Compile with SimpleOMP
+# Basic usage (pragma directives only)
 emcc your_code.c -fopenmp -pthread libsimpleomp.a -o output.js
+
+# With OpenMP Runtime API (using omp.h)
+emcc your_code.c -I/path/to/include -fopenmp -pthread libsimpleomp.a -o output.js
 ```
 
 For a complete working example, see the [example](example/) directory.
@@ -112,6 +116,9 @@ The [example](example/) directory contains sample projects demonstrating SimpleO
 - **single.cpp** - Single thread execution construct
 - **atomic.cpp** - Atomic operations (add/sub/mul/div/and/or/xor/min/max/read/write)
 - **nowait.cpp** - Nowait clause demonstration (skipping implicit barriers)
+- **locks.cpp** - OpenMP lock API demonstration (simple and nestable locks)
+- **data_sharing.cpp** - Data-sharing clauses (private/shared/firstprivate/lastprivate)
+- **cancel.cpp** - Cancellation constructs for early termination of parallel regions
 
 ```bash
 # Build all examples

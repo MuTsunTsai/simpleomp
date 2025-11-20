@@ -2,10 +2,7 @@
 // Demonstrates #pragma omp atomic for thread-safe variable updates
 
 #include <iostream>
-
-// Forward declarations of OpenMP runtime functions
-extern "C" int omp_get_thread_num();
-extern "C" int omp_get_num_threads();
+#include <omp.h>
 
 int main() {
 	std::cout << "=== SimpleOMP Atomic Operations Demo ===" << std::endl;

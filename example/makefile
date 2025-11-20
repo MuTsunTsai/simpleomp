@@ -24,7 +24,7 @@ LDFLAGS :=\
 # https://emscripten.org/docs/tools_reference/emcc.html
 # https://github.com/emscripten-core/emscripten/blob/main/src/settings.js
 
-CPPFLAGS := -I$(SRCF) -std=c++20
+CPPFLAGS := -I$(SRCF) -I../include -std=c++20
 CXXFLAGS := -Oz -flto -fopenmp -pthread -sDISABLE_EXCEPTION_CATCHING=1
 
 ifeq ($(OS),Windows_NT)

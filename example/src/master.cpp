@@ -1,11 +1,7 @@
 #include <iostream>
+#include <omp.h>
 
 using namespace std;
-
-// External OpenMP functions
-extern "C" {
-	int omp_get_thread_num();
-}
 
 int main() {
 	cout << "=== SimpleOMP Master Construct Demo ===" << endl << endl;

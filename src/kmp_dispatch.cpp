@@ -8,7 +8,6 @@
 
 #if NCNN_SIMPLEOMP
 
-#include "simpleomp.h"
 #include <stdint.h>
 #include <algorithm>
 #include <map>

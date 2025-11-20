@@ -4,7 +4,8 @@
 		{
 			"name": "Emscripten",
 			"includePath": [
-				"${workspaceFolder}/src"
+				"${workspaceFolder}/src",
+				"${workspaceFolder}/include"
 			],
 			"defines": [
 				"NCNN_SIMPLEOMP=1"

@@ -82,9 +82,16 @@ jobs:
             emcc your_code.c -fopenmp -pthread libsimpleomp.a -o output.js
             ```
 
+            Optionally, download `omp.h` to use the OpenMP Runtime API:
+
+            ```bash
+            emcc your_code.c -I/path/to/include -fopenmp -pthread libsimpleomp.a -o output.js
+            ```
+
             See the [README](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/README.md) for more details.
           files: |
             dist/libsimpleomp.a
+            include/omp.h
           draft: false
           prerelease: false
         env:
