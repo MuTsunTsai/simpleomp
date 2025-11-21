@@ -2,7 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/MuTsunTsai/simpleomp)](https://github.com/MuTsunTsai/simpleomp/releases)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/MuTsunTsai/simpleomp/deploy.yml?branch=main)](https://github.com/MuTsunTsai/simpleomp/actions)
-[![License](https://img.shields.io/github/license/MuTsunTsai/simpleomp)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://MuTsunTsai.github.io/simpleomp/)
 
 A lightweight OpenMP implementation for Emscripten, enabling basic parallel programming capabilities in WebAssembly applications.
