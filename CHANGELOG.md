@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2025-01-21
+
+### Fixed
+- **Critical: `num_threads` clause scope isolation**: Fixed incorrect behavior where the `num_threads` clause would persist across multiple parallel regions instead of only affecting the immediately following region
+  - **Problem**: `#pragma omp parallel num_threads(4)` followed by `#pragma omp parallel` (without `num_threads`) would incorrectly use 4 threads instead of all available threads
+  - **Root cause**: Confused two distinct mechanisms:
+    1. `num_threads` clause (temporary, single parallel region scope)
+    2. `omp_set_num_threads()` function (persistent, affects all subsequent regions)
+  - **Solution**: Implemented proper three-layer TLS variable architecture:
+    - `tls_num_threads`: Persistent setting (from `omp_set_num_threads()`)
+    - `tls_pushed_num_threads`: Temporary setting (from `num_threads` clause, consumed by next `__kmpc_fork_call`)
+    - `tls_current_num_threads`: Active thread count within current parallel region
+  - **Impact**: Ensures OpenMP standard-compliant behavior for `num_threads` clause scoping
+
+### Changed
+- **Code simplification**: Removed GCC/GOMP code paths (`#else` branch in [src/simpleomp.cpp](src/simpleomp.cpp))
+  - SimpleOMP officially only supports Clang/LLVM (Emscripten requirement)
+  - Removes ~150 lines of unused GOMP-specific code
+  - Improves code maintainability by eliminating dead code paths
+
+### Technical Details
+- **Modified files**:
+  - [src/simpleomp.cpp](src/simpleomp.cpp):
+    - Added `tls_pushed_num_threads` and `tls_current_num_threads` TLS variables
+    - Modified `__kmpc_push_num_threads()` to store in `tls_pushed_num_threads`
+    - Modified `__kmpc_fork_call()` to consume pushed value and set `tls_current_num_threads`
+    - Modified `omp_get_num_threads()` to prioritize `tls_current_num_threads` over persistent setting
+    - Clear `tls_current_num_threads` when exiting parallel regions
+    - Removed entire `#else` (GCC/GOMP) code block
+  - [src/kmp_dispatch.cpp](src/kmp_dispatch.cpp):
+    - Changed from directly reading `tls_num_threads` to calling `omp_get_num_threads()`
+    - Fixes guided scheduling chunk size calculation to use correct thread count
+  - [src/kmp_serialized.cpp](src/kmp_serialized.cpp):
+    - Updated to use `tls_current_num_threads` for serialized parallel regions
+    - Properly clear on `__kmpc_end_serialized_parallel()`
+
 ## [1.6.0] - 2025-01-20
 
 ### Added

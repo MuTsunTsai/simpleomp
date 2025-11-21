@@ -20,8 +20,8 @@
 // Diagnostic logging flag - set to false for production
 #define ENABLE_DISPATCH_DEBUG 0
 
-// Forward declare external TLS variables from simpleomp.cpp (defined outside ncnn namespace)
-extern ncnn::ThreadLocalStorage tls_num_threads;
+// Forward declare external functions and TLS variables from simpleomp.cpp (defined outside ncnn namespace)
+extern "C" int omp_get_num_threads();
 extern ncnn::ThreadLocalStorage tls_thread_num;
 
 namespace ncnn {
@@ -552,7 +552,7 @@ int __kmpc_dispatch_next_4(void* loc, int32_t gtid, int32_t* last,
     }
 
     *stride = state->stride;
-    int num_threads = std::max((int)reinterpret_cast<size_t>(tls_num_threads.get()), 1);
+    int num_threads = omp_get_num_threads();
 
     bool has_work;
 
@@ -644,7 +644,7 @@ int __kmpc_dispatch_next_4u(void* loc, int32_t /*gtid*/, int32_t* last,
     }
 
     *stride = state->stride;
-    int num_threads = std::max((int)reinterpret_cast<size_t>(tls_num_threads.get()), 1);
+    int num_threads = omp_get_num_threads();
 
     bool has_work;
 
@@ -729,7 +729,7 @@ int __kmpc_dispatch_next_8(void* loc, int32_t /*gtid*/, int32_t* last,
     }
 
     *stride = state->stride;
-    int num_threads = std::max((int)reinterpret_cast<size_t>(tls_num_threads.get()), 1);
+    int num_threads = omp_get_num_threads();
 
     bool has_work;
 
@@ -814,7 +814,7 @@ int __kmpc_dispatch_next_8u(void* loc, int32_t /*gtid*/, int32_t* last,
     }
 
     *stride = state->stride;
-    int num_threads = std::max((int)reinterpret_cast<size_t>(tls_num_threads.get()), 1);
+    int num_threads = omp_get_num_threads();
 
     bool has_work;
 

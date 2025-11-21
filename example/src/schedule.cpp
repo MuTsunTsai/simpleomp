@@ -1,6 +1,6 @@
 #include <iostream>
-#include <vector>
 #include <omp.h>
+#include <vector>
 
 using namespace std;
 
@@ -36,7 +36,7 @@ void test_dynamic_schedule() {
 	vector<int> assignment(20, -1);
 	int actual_threads = 0;
 
-#pragma omp parallel num_threads(4)
+#pragma omp parallel
 	{
 #pragma omp master
 		{
@@ -46,15 +46,25 @@ void test_dynamic_schedule() {
 
 	cout << "Actual number of threads: " << actual_threads << endl;
 
-#pragma omp parallel for schedule(dynamic, 2) num_threads(4)
+	bool reassign = false;
+
+#pragma omp parallel for schedule(dynamic, 2)
 	for(int i = 0; i < 20; i++) {
+		if(reassign) continue;
 		// More substantial computation to ensure threads have time to
 		// participate
-		volatile int dummy = 0;
-		for(int j = 0; j < 50000; j++) {
-			dummy += j;
+		volatile double dummy = 0;
+		for(int j = 0; j < (i * 17 % 7 + 1) * 5000000; j++) {
+			dummy = sqrt(dummy + j);
 		}
-		assignment[i] = omp_get_thread_num();
+#pragma omp critical
+		{
+			if(assignment[i] != -1) reassign = true;
+		}
+#pragma omp critical
+		{
+			assignment[i] = omp_get_thread_num();
+		}
 	}
 
 	cout << "Actual:   ";
@@ -63,6 +73,8 @@ void test_dynamic_schedule() {
 		if(i < 19) cout << ",";
 	}
 	cout << endl;
+
+	cout << "No reassignment: " << (!reassign ? "PASS" : "FAIL") << endl;
 
 	// Verify all threads participated
 	cout << "Verifying all threads participated: ";
@@ -97,6 +109,8 @@ void test_guided_schedule() {
 	vector<int> assignment(40, -1);
 	vector<int> chunk_sizes;
 
+	bool reassign = false;
+
 #pragma omp parallel for schedule(guided, 2) num_threads(4)
 	for(int i = 0; i < 40; i++) {
 		// More substantial computation to ensure threads have time to
@@ -105,6 +119,7 @@ void test_guided_schedule() {
 		for(int j = 0; j < 50000; j++) {
 			dummy += j;
 		}
+		if(assignment[i] != -1) reassign = true;
 		assignment[i] = omp_get_thread_num();
 	}
 
@@ -130,6 +145,8 @@ void test_guided_schedule() {
 		if(i < 40) cout << ",";
 	}
 	cout << endl;
+
+	cout << "No reassignment: " << (!reassign ? "PASS" : "FAIL") << endl;
 
 	// Verify all threads participated
 	cout << "Verifying all threads participated: ";

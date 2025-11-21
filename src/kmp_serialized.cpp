@@ -11,9 +11,9 @@
 extern "C" {
 #endif
 
-// Thread-local storage for thread number and number of threads
+// Thread-local storage for thread number and current parallel region's num_threads
 // These are defined in simpleomp.cpp
-extern ncnn::ThreadLocalStorage tls_num_threads;
+extern ncnn::ThreadLocalStorage tls_current_num_threads;
 extern ncnn::ThreadLocalStorage tls_thread_num;
 
 // Serialized parallel region functions
@@ -24,8 +24,8 @@ void __kmpc_serialized_parallel(void* /*loc*/, int32_t /*gtid*/)
     // NCNN_LOGE("__kmpc_serialized_parallel");
     // Enter a serialized parallel construct
     // This is used when if clause evaluates to false
-    // Set to single-threaded mode
-    tls_num_threads.set(reinterpret_cast<void*>((size_t)1));
+    // Set to single-threaded mode for this parallel region
+    tls_current_num_threads.set(reinterpret_cast<void*>((size_t)1));
     tls_thread_num.set(reinterpret_cast<void*>((size_t)0));
 }
 
@@ -33,8 +33,8 @@ void __kmpc_end_serialized_parallel(void* /*loc*/, int32_t /*gtid*/)
 {
     // NCNN_LOGE("__kmpc_end_serialized_parallel");
     // Exit a serialized parallel construct
-    // Reset thread-local storage if needed
-    // In SimpleOMP architecture, we don't need special cleanup here
+    // Clear current parallel region's num_threads
+    tls_current_num_threads.set(reinterpret_cast<void*>((size_t)0));
 }
 
 #ifdef __cplusplus
