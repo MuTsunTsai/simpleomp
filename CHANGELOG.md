@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.3] - 2025-01-23
+
+### Fixed
+- **Critical: Dynamic/guided scheduling deadlock**: Fixed deadlock in `__kmpc_dispatch_next_*` functions when worker threads wait for `marked_for_deletion` flag to be cleared
+  - **Problem**: Worker threads detected new loop generation and entered spin-wait for `marked_for_deletion` flag, but master thread was already waiting at barrier → deadlock
+  - **Root cause**: Incorrect synchronization logic - `marked_for_deletion` is only cleared in `dispatch_init` (master thread), but worker threads tried to wait for it in `dispatch_next`, creating circular dependency
+  - **Solution**: Removed the `marked_for_deletion` wait loop from `dispatch_next` functions, allowing worker threads to proceed immediately upon detecting new generation
+  - **Impact**: Fixes hang issues when using `schedule(dynamic)` or `schedule(guided)` in consecutive parallel loops
+
+### Added
+- Comprehensive test suite for `#pragma omp parallel for` construct ([test/specs/for.cpp](test/specs/for.cpp))
+  - 25 test cases covering canonical loop forms, relational operators, schedule types, edge cases
+  - Validates correctness of iteration distribution, implicit barriers, thread participation
+  - Tests various integer types (signed/unsigned, int/long), loop bounds, and increment patterns
+- Comprehensive test suite for `schedule` clause ([test/specs/schedule.cpp](test/specs/schedule.cpp))
+  - Tests for `static`, `dynamic`, `guided`, `runtime`, and `auto` schedules
+  - Validates chunk size handling, load balancing, and deterministic behavior
+  - Covers schedule clause interaction with `if` and `num_threads` clauses
+
+### Technical Details
+- **Modified files**:
+  - [src/kmp_dispatch.cpp](src/kmp_dispatch.cpp): Removed spin-wait for `marked_for_deletion` in all four `__kmpc_dispatch_next_*` variants, added explanatory comments about deadlock scenario
+  - [test/specs/cancel.cpp](test/specs/cancel.cpp): Increased workload in `MultipleCancellationPoints` test for better timing reliability
+
 ## [1.6.2] - 2025-01-22
 
 ### Fixed
@@ -290,6 +314,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ring buffer task queue for efficient work distribution
 - Derived from Tencent NCNN threading implementation
 
+[1.6.3]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.5.1...v1.6.0

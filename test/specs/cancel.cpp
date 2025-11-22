@@ -155,9 +155,9 @@ TEST_F(CancelTest, MultipleCancellationPoints) {
             reached_point3++;
         } else {
             // Add some work to give Thread 0 time to set cancel flag
-            volatile int sum = 0;
-            for (int i = 0; i < 10000; i++) {
-                sum += i;
+            volatile double x = 0;
+            for (int i = 0; i < 100000; i++) {
+                x = sqrt(x + i);
             }
 
             // Other threads encounter first cancellation point

@@ -16,21 +16,29 @@
 	"files.exclude": {
 		"**/obj": true
 	},
+	"testMate.cpp.discovery.loadOnStartup": true,
+	"testMate.cpp.discovery.runtimeLimit": 5,
+	"testMate.cpp.log.logpanel": true,
 	"testMate.cpp.test.advancedExecutables": [
 		{
-			"pattern": "test/build/test.js",
-			"name": "SimpleOMP Tests",
 			"cwd": "${workspaceFolder}/test/build",
-			"executableSuffixToInclude": [".js"],
+			"executableSuffixToInclude": [
+				".js"
+			],
 			"executionWrapper": {
-				"path": "C:\\Program Files\\nodejs\\node.exe",
-				"args": ["${cmd}", "${argsFlat}"]
+				"args": [
+					"${cmd}",
+					"${argsFlat}"
+				],
+				"path": "C:\\Program Files\\nodejs\\node.exe"
 			},
 			"gtest": {
-				"prependTestRunningArgs": ["--gtest_color=no"]
-			}
+				"prependTestRunningArgs": [
+					"--gtest_color=no"
+				]
+			},
+			"name": "SimpleOMP Tests",
+			"pattern": "test/build/test.js"
 		}
-	],
-	"testMate.cpp.log.logpanel": true,
-	"testMate.cpp.discovery.loadOnStartup": true
+	]
 }

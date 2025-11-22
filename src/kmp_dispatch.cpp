@@ -525,23 +525,10 @@ int __kmpc_dispatch_next_4(void* loc, int32_t gtid, int32_t* last,
     }
 
     if (expected_gen != current_gen) {
-        // New loop started - wait for marked_for_deletion to be cleared
-        #if ENABLE_DISPATCH_DEBUG
-        int marked_wait_count = 0;
-        #endif
-        while (state->marked_for_deletion.load(std::memory_order_acquire)) {
-            #if ENABLE_DISPATCH_DEBUG
-            if (marked_wait_count % 1000000 == 0 && marked_wait_count > 0) {
-                std::stringstream ss;
-                ss << "[DISPATCH_WAIT_MARKED] Thread " << tid << ": Waiting for marked_for_deletion to clear, wait_count="
-                   << marked_wait_count << ", loc=" << loc << ", state=" << (void*)state << "\n";
-                std::cout << ss.str() << std::flush;
-            }
-            marked_wait_count++;
-            #endif
-            // Spin wait for reset
-        }
-
+        // New loop started - update expected generation
+        // Note: Do NOT wait for marked_for_deletion here - it causes deadlock!
+        // The marked_for_deletion flag is only cleared in dispatch_init (which runs on master thread)
+        // If we wait here, and master thread is already in barrier waiting for us, we deadlock.
         #if ENABLE_DISPATCH_DEBUG
         std::stringstream ss;
         ss << "[DISPATCH_NEW_LOOP] Thread " << tid << ": New loop detected, expected_gen="
@@ -617,23 +604,8 @@ int __kmpc_dispatch_next_4u(void* loc, int32_t /*gtid*/, int32_t* last,
     }
 
     if (expected_gen != current_gen) {
-        // New loop started - wait for marked_for_deletion to be cleared
-        #if ENABLE_DISPATCH_DEBUG
-        int marked_wait_count = 0;
-        #endif
-        while (state->marked_for_deletion.load(std::memory_order_acquire)) {
-            #if ENABLE_DISPATCH_DEBUG
-            if (marked_wait_count % 1000000 == 0 && marked_wait_count > 0) {
-                std::stringstream ss;
-                ss << "[DISPATCH_WAIT_MARKED] Thread " << tid << ": Waiting for marked_for_deletion to clear, wait_count="
-                   << marked_wait_count << ", loc=" << loc << ", state=" << (void*)state << "\n";
-                std::cout << ss.str() << std::flush;
-            }
-            marked_wait_count++;
-            #endif
-            // Spin wait for reset
-        }
-
+        // New loop started - update expected generation
+        // Note: Do NOT wait for marked_for_deletion here - it causes deadlock!
         #if ENABLE_DISPATCH_DEBUG
         std::stringstream ss;
         ss << "[DISPATCH_NEW_LOOP] Thread " << tid << ": New loop detected, expected_gen="
@@ -702,23 +674,8 @@ int __kmpc_dispatch_next_8(void* loc, int32_t /*gtid*/, int32_t* last,
     }
 
     if (expected_gen != current_gen) {
-        // New loop started - wait for marked_for_deletion to be cleared
-        #if ENABLE_DISPATCH_DEBUG
-        int marked_wait_count = 0;
-        #endif
-        while (state->marked_for_deletion.load(std::memory_order_acquire)) {
-            #if ENABLE_DISPATCH_DEBUG
-            if (marked_wait_count % 1000000 == 0 && marked_wait_count > 0) {
-                std::stringstream ss;
-                ss << "[DISPATCH_WAIT_MARKED] Thread " << tid << ": Waiting for marked_for_deletion to clear, wait_count="
-                   << marked_wait_count << ", loc=" << loc << ", state=" << (void*)state << "\n";
-                std::cout << ss.str() << std::flush;
-            }
-            marked_wait_count++;
-            #endif
-            // Spin wait for reset
-        }
-
+        // New loop started - update expected generation
+        // Note: Do NOT wait for marked_for_deletion here - it causes deadlock!
         #if ENABLE_DISPATCH_DEBUG
         std::stringstream ss;
         ss << "[DISPATCH_NEW_LOOP] Thread " << tid << ": New loop detected, expected_gen="
@@ -787,23 +744,8 @@ int __kmpc_dispatch_next_8u(void* loc, int32_t /*gtid*/, int32_t* last,
     }
 
     if (expected_gen != current_gen) {
-        // New loop started - wait for marked_for_deletion to be cleared
-        #if ENABLE_DISPATCH_DEBUG
-        int marked_wait_count = 0;
-        #endif
-        while (state->marked_for_deletion.load(std::memory_order_acquire)) {
-            #if ENABLE_DISPATCH_DEBUG
-            if (marked_wait_count % 1000000 == 0 && marked_wait_count > 0) {
-                std::stringstream ss;
-                ss << "[DISPATCH_WAIT_MARKED] Thread " << tid << ": Waiting for marked_for_deletion to clear, wait_count="
-                   << marked_wait_count << ", loc=" << loc << ", state=" << (void*)state << "\n";
-                std::cout << ss.str() << std::flush;
-            }
-            marked_wait_count++;
-            #endif
-            // Spin wait for reset
-        }
-
+        // New loop started - update expected generation
+        // Note: Do NOT wait for marked_for_deletion here - it causes deadlock!
         #if ENABLE_DISPATCH_DEBUG
         std::stringstream ss;
         ss << "[DISPATCH_NEW_LOOP] Thread " << tid << ": New loop detected, expected_gen="
