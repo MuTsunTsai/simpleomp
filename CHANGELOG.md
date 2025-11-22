@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2025-01-22
+
+### Fixed
+- **Critical: Cancellable barrier deadlock**: Fixed multiple race conditions and deadlocks in `__kmpc_cancel_barrier` implementation
+  - **Problem 1 (Barrier deadlock)**: When Thread 0 called `#pragma omp cancel parallel`, it exited immediately, but other threads continued waiting at the barrier expecting all threads to arrive → deadlock
+  - **Problem 2 (State pollution)**: Barrier state was not cleaned up when threads exited early due to cancellation, causing subsequent tests to encounter corrupted state (e.g., `arrived = -2`) → hang
+  - **Root cause**: Incorrect understanding of OpenMP cancellation semantics - `#pragma omp cancel` includes an implicit cancellation point and causes immediate exit (per [OpenMP specification](https://www.ibm.com/docs/it/xl-c-and-cpp-linux/16.1.0?topic=parallelization-pragma-omp-cancel))
+  - **Solution**:
+    1. Modified `__kmpc_cancel_barrier` to handle three scenarios:
+       - Cancellation active BEFORE barrier → exit immediately without waiting, Thread 0 cleans up barrier state
+       - Cancellation occurs DURING barrier wait → decrement arrived count, broadcast to wake other threads, exit
+       - No cancellation → normal barrier synchronization
+    2. Added cleanup logic for early exit scenario to prevent state pollution between tests
+
+### Technical Details
+- **Modified files**:
+  - [src/kmp_barrier.h](src/kmp_barrier.h) (NEW): Shared header containing `BarrierState` struct and global variable declarations
+  - [src/kmp_barrier.cpp](src/kmp_barrier.cpp): Removed `static` from `barrier_states` and `barrier_map_lock` definitions, include kmp_barrier.h
+  - [src/kmp_cancel.cpp](src/kmp_cancel.cpp): Include kmp_barrier.h, implement three-scenario cancellable barrier with cleanup logic
+  - [src/platform.h](src/platform.h): Added `#pragma once` guard
+
 ## [1.6.1] - 2025-01-21
 
 ### Fixed
@@ -269,6 +290,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ring buffer task queue for efficient work distribution
 - Derived from Tencent NCNN threading implementation
 
+[1.6.2]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.1...v1.6.2
+[1.6.1]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/MuTsunTsai/simpleomp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/MuTsunTsai/simpleomp/compare/v1.4.0...v1.5.0

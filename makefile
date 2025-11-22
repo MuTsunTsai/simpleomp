@@ -17,7 +17,7 @@ OUT := libsimpleomp
 # https://emscripten.org/docs/tools_reference/emcc.html
 # https://github.com/emscripten-core/emscripten/blob/main/src/settings.js
 
-CPPFLAGS := -I$(SRCF) -std=c++20 -DNCNN_SIMPLEOMP=1
+CPPFLAGS := -I$(SRCF) -Iinclude -std=c++20 -DNCNN_SIMPLEOMP=1
 CXXFLAGS := -Oz -flto -fopenmp -pthread -sDISABLE_EXCEPTION_CATCHING=1
 
 SLIB := $(TARGET)/$(OUT).a

@@ -9,6 +9,7 @@
 #if NCNN_SIMPLEOMP
 
 #include "cpu.h"
+#include <omp.h>
 #include <emscripten.h>
 #include <cstring>
 #include <cstdlib>
@@ -140,16 +141,16 @@ int omp_get_active_level(void)
 // ============================================================================
 
 // Default schedule is static
-static int g_schedule_kind = 1; // omp_sched_static
+static omp_sched_t g_schedule_kind = omp_sched_static;
 static int g_schedule_chunk = 0;
 
-void omp_set_schedule(int kind, int chunk_size)
+void omp_set_schedule(omp_sched_t kind, int chunk_size)
 {
     g_schedule_kind = kind;
     g_schedule_chunk = chunk_size;
 }
 
-void omp_get_schedule(int* kind, int* chunk_size)
+void omp_get_schedule(omp_sched_t* kind, int* chunk_size)
 {
     if (kind) {
         *kind = g_schedule_kind;
@@ -210,10 +211,7 @@ int omp_get_cancellation(void)
 
 // SimpleOMP locks are implemented using ncnn::Mutex
 // Lock structure contains a pointer to Mutex
-
-// Forward declare omp_lock_t and omp_nest_lock_t from omp.h
-typedef struct { void* _lk; } omp_lock_t;
-typedef struct { void* _lk; int _count; } omp_nest_lock_t;
+// omp_lock_t and omp_nest_lock_t are already defined in omp.h
 
 void omp_init_lock(omp_lock_t* lock)
 {
@@ -224,9 +222,9 @@ void omp_init_lock(omp_lock_t* lock)
     *lock_ptr = new ncnn::Mutex();
 }
 
-void omp_init_lock_with_hint(omp_lock_t* lock, unsigned int /*hint*/)
+void omp_init_lock_with_hint(omp_lock_t* lock, omp_sync_hint_t hint)
 {
-    // Ignore hint in SimpleOMP
+    (void)hint; // Ignore hint in SimpleOMP
     omp_init_lock(lock);
 }
 
@@ -290,9 +288,9 @@ void omp_init_nest_lock(omp_nest_lock_t* lock)
     (*nest_lock_ptr)->count = 0;
 }
 
-void omp_init_nest_lock_with_hint(omp_nest_lock_t* lock, unsigned int /*hint*/)
+void omp_init_nest_lock_with_hint(omp_nest_lock_t* lock, omp_sync_hint_t hint)
 {
-    // Ignore hint in SimpleOMP
+    (void)hint; // Ignore hint in SimpleOMP
     omp_init_nest_lock(lock);
 }
 
@@ -398,11 +396,11 @@ double omp_get_wtick(void)
 // Processor Binding / Affinity
 // ============================================================================
 
-int omp_get_proc_bind(void)
+omp_proc_bind_t omp_get_proc_bind(void)
 {
     // SimpleOMP doesn't support processor binding
     // Return false (no binding)
-    return 0; // omp_proc_bind_false
+    return omp_proc_bind_false;
 }
 
 int omp_get_num_places(void)

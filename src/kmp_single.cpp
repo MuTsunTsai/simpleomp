@@ -5,19 +5,9 @@
 
 #if NCNN_SIMPLEOMP
 
+#include <omp.h>
 #include <stdint.h>
 #include <map>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Forward declaration for OMP runtime function
-extern int omp_get_num_threads();
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 namespace ncnn {
 

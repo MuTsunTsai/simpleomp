@@ -11,16 +11,17 @@
 #include <map>
 #include <atomic>
 #include <stdio.h>
+#include <omp.h>
+#include "kmp_barrier.h"
 
 #define DEBUG_CANCEL 0
-
-// Forward declarations
-extern "C" int omp_get_cancellation(void);
-extern "C" void __kmpc_barrier(void* loc, int32_t gtid);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Forward declaration for __kmpc_barrier (internal runtime function)
+void __kmpc_barrier(void* loc, int32_t gtid);
 
 // Cancellation kind constants (from OpenMP specification)
 enum {
@@ -53,6 +54,10 @@ The cancel construct activates cancellation of the binding region.
 If cancellation is activated, the encountering task will begin executing the
 cancellation sequence and the encountering thread will ultimately resume execution
 at the end of the canceled region.
+
+IMPORTANT: According to OpenMP specification, #pragma omp cancel includes an
+implicit cancellation point. The encountering thread sets the cancellation flag
+and then immediately exits the binding region (by returning non-zero).
 */
 int __kmpc_cancel(void* loc, int gtid, int cncl_kind)
 {
@@ -80,10 +85,11 @@ int __kmpc_cancel(void* loc, int gtid, int cncl_kind)
     }
 
     #if DEBUG_CANCEL
-    fprintf(stderr, "[CANCEL] Thread %d: set cancel_kind=%d, returning 1\n", gtid, cncl_kind);
+    fprintf(stderr, "[CANCEL] Thread %d: set cancel_kind=%d, returning 1 (exit immediately)\n", gtid, cncl_kind);
     #endif
 
-    // Return non-zero to indicate this thread should cancel
+    // Return non-zero to make the encountering thread exit immediately
+    // #pragma omp cancel includes an implicit cancellation point
     return 1;
 }
 
@@ -164,6 +170,12 @@ void __kmpc_cancel_clear(void* loc)
 
 Barrier with cancellation point
 This is a special barrier that also checks for cancellation
+
+NOTE: According to OpenMP specification, a barrier is an implicit cancellation point.
+Three scenarios must be handled:
+1. Cancellation active BEFORE reaching barrier → exit immediately, don't wait
+2. Cancellation occurs DURING barrier wait → stop waiting, exit
+3. No cancellation during barrier → wait until all threads arrive
 */
 int __kmpc_cancel_barrier(void* loc, int gtid)
 {
@@ -171,40 +183,125 @@ int __kmpc_cancel_barrier(void* loc, int gtid)
     fprintf(stderr, "[CANCEL_BARRIER] Thread %d entering\n", gtid);
     #endif
 
-    // First check for cancellation
-    int cancelled = __kmpc_cancellationpoint(loc, gtid, cancel_parallel);
+    // Scenario 1: Check if cancellation is already active BEFORE barrier
+    if (omp_get_cancellation()) {
+        int current_kind = g_current_cancel_kind.load(std::memory_order_acquire);
 
-    #if DEBUG_CANCEL
-    fprintf(stderr, "[CANCEL_BARRIER] Thread %d: cancellation check returned %d\n", gtid, cancelled);
-    #endif
-
-    // If cancelled, skip the barrier and return immediately
-    if (cancelled) {
         #if DEBUG_CANCEL
-        fprintf(stderr, "[CANCEL_BARRIER] Thread %d: skipping barrier due to cancellation\n", gtid);
+        fprintf(stderr, "[CANCEL_BARRIER] Thread %d: current_cancel_kind=%d\n", gtid, current_kind);
         #endif
-        return cancelled;
+
+        // If cancel_parallel is active, exit immediately without entering barrier
+        // We need to clean up any existing barrier state for this location
+        if (current_kind == cancel_parallel) {
+            #if DEBUG_CANCEL
+            fprintf(stderr, "[CANCEL_BARRIER] Thread %d: cancellation already active, cleaning up and exiting\n", gtid);
+            #endif
+
+            // Clean up barrier state if it exists (in case of cancellation from previous test)
+            int thread_num = omp_get_thread_num();
+            void* barrier_id = loc;
+
+            if (thread_num == 0) {
+                ncnn::barrier_map_lock.lock();
+                auto it = ncnn::barrier_states.find(barrier_id);
+                if (it != ncnn::barrier_states.end()) {
+                    delete it->second;
+                    ncnn::barrier_states.erase(it);
+                }
+                ncnn::barrier_map_lock.unlock();
+            }
+
+            return 1;  // Return non-zero to indicate cancellation
+        }
+    }
+
+    // Scenario 2 & 3: Implement cancellable barrier
+    // This is a modified barrier that checks for cancellation during wait
+
+    int num_threads = omp_get_num_threads();
+
+    // Single-threaded case: no barrier needed
+    if (num_threads == 1) {
+        return 0;
+    }
+
+    int thread_num = omp_get_thread_num();
+    void* barrier_id = loc;
+
+    ncnn::BarrierState* state = nullptr;
+
+    // Get or create barrier state
+    {
+        ncnn::barrier_map_lock.lock();
+        auto it = ncnn::barrier_states.find(barrier_id);
+        if (it == ncnn::barrier_states.end()) {
+            state = new ncnn::BarrierState();
+            state->num_threads = num_threads;
+            state->arrived = 0;
+            state->generation = 0;
+            ncnn::barrier_states[barrier_id] = state;
+        } else {
+            state = it->second;
+        }
+        ncnn::barrier_map_lock.unlock();
+    }
+
+    // Synchronize at the barrier with cancellation checking
+    {
+        state->lock.lock();
+        int current_generation = state->generation;
+        state->arrived++;
+
+        if (state->arrived == num_threads) {
+            // Last thread to arrive: reset and wake up all waiting threads
+            state->arrived = 0;
+            state->generation++;
+            state->condition.broadcast();
+            state->lock.unlock();
+        } else {
+            // Wait for all threads to arrive OR cancellation
+            while (current_generation == state->generation) {
+                // Check for cancellation during wait
+                if (omp_get_cancellation()) {
+                    int cancel_kind = g_current_cancel_kind.load(std::memory_order_acquire);
+                    if (cancel_kind == cancel_parallel) {
+                        #if DEBUG_CANCEL
+                        fprintf(stderr, "[CANCEL_BARRIER] Thread %d: cancellation detected during wait\n", gtid);
+                        #endif
+                        // Decrement arrived count since we're leaving early
+                        state->arrived--;
+                        // Wake up other threads so they can also check cancellation
+                        state->condition.broadcast();
+                        state->lock.unlock();
+                        return 1;  // Exit with cancellation
+                    }
+                }
+                state->condition.wait(state->lock);
+            }
+            state->lock.unlock();
+        }
+    }
+
+    // Clean up barrier state when all threads have passed
+    if (thread_num == 0) {
+        ncnn::barrier_map_lock.lock();
+        state->lock.lock();
+        bool should_cleanup = (state->arrived == 0);
+        state->lock.unlock();
+
+        if (should_cleanup) {
+            ncnn::barrier_states.erase(barrier_id);
+            delete state;
+        }
+        ncnn::barrier_map_lock.unlock();
     }
 
     #if DEBUG_CANCEL
-    fprintf(stderr, "[CANCEL_BARRIER] Thread %d: calling normal barrier\n", gtid);
+    fprintf(stderr, "[CANCEL_BARRIER] Thread %d: barrier completed, no cancellation\n", gtid);
     #endif
 
-    // Otherwise, perform normal barrier
-    __kmpc_barrier(loc, gtid);
-
-    #if DEBUG_CANCEL
-    fprintf(stderr, "[CANCEL_BARRIER] Thread %d: barrier completed, checking cancellation again\n", gtid);
-    #endif
-
-    // Check again after barrier in case another thread cancelled
-    int result = __kmpc_cancellationpoint(loc, gtid, cancel_parallel);
-
-    #if DEBUG_CANCEL
-    fprintf(stderr, "[CANCEL_BARRIER] Thread %d: exiting, returning %d\n", gtid, result);
-    #endif
-
-    return result;
+    return 0;  // Return 0 to indicate no cancellation
 }
 
 #ifdef __cplusplus

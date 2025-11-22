@@ -8,6 +8,7 @@
 
 #if NCNN_SIMPLEOMP
 
+#include <omp.h>
 #include <stdint.h>
 #include <algorithm>
 #include <map>
@@ -21,7 +22,6 @@
 #define ENABLE_DISPATCH_DEBUG 0
 
 // Forward declare external functions and TLS variables from simpleomp.cpp (defined outside ncnn namespace)
-extern "C" int omp_get_num_threads();
 extern ncnn::ThreadLocalStorage tls_thread_num;
 
 namespace ncnn {

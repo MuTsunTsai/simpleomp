@@ -8,21 +8,10 @@
 
 #if NCNN_SIMPLEOMP
 
+#include <omp.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Forward declarations for OMP runtime functions
-extern int omp_get_num_threads();
-extern int omp_get_thread_num();
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 namespace ncnn {
 

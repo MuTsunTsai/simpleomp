@@ -5,37 +5,15 @@
 
 #if NCNN_SIMPLEOMP
 
+#include <omp.h>
 #include <stdint.h>
-#include <map>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Forward declarations for OMP runtime functions
-extern int omp_get_num_threads();
-extern int omp_get_thread_num();
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+#include "kmp_barrier.h"
 
 namespace ncnn {
 
-// Barrier state for a team of threads
-struct BarrierState
-{
-    int num_threads;        // Total number of threads in the team
-    int arrived;            // Number of threads that have arrived at the barrier
-    int generation;         // Barrier generation counter to handle multiple barrier calls
-    Mutex lock;
-    ConditionVariable condition;
-};
-
-// Global map to store barrier states for different teams
-// Key is the master thread's address (represents the team)
-static std::map<void*, BarrierState*> barrier_states;
-static ncnn::Mutex barrier_map_lock;
+// Define the global barrier state variables (declared in kmp_barrier.h)
+std::map<void*, BarrierState*> barrier_states;
+Mutex barrier_map_lock;
 
 } // namespace ncnn
 

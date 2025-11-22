@@ -55,6 +55,7 @@ extern "C" {
 
 static void init_g_kmp_global();
 static void* kmp_threadfunc(void* args);
+void __kmpc_cancel_clear(void* loc);
 
 #ifdef __cplusplus
 } // extern "C"
@@ -561,6 +562,9 @@ void __kmpc_fork_call(void* /*loc*/, int32_t argc, kmpc_micro fn, ...)
 
         // Clear current parallel region's num_threads when exiting
         tls_current_num_threads.set(reinterpret_cast<void*>((size_t)0));
+
+        // Clear cancellation state when parallel region ends
+        __kmpc_cancel_clear(nullptr);
         return;
     }
 
@@ -605,6 +609,9 @@ void __kmpc_fork_call(void* /*loc*/, int32_t argc, kmpc_micro fn, ...)
 
     // Clear current parallel region's num_threads when exiting
     tls_current_num_threads.set(reinterpret_cast<void*>((size_t)0));
+
+    // Clear cancellation state when parallel region ends
+    __kmpc_cancel_clear(nullptr);
 }
 
 void __kmpc_for_static_init_4(void* /*loc*/, int32_t gtid, int32_t sched, int32_t* last, int32_t* lower, int32_t* upper, int32_t* stride, int32_t incr, int32_t chunk)
