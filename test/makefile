@@ -2,25 +2,27 @@
 MAKEFLAGS += -j12
 
 CXX := em++
-AR := emar
 
-SRCF := src
+SRCF := specs
 TEMP := obj
-TARGET := dist
+TARGET := build
 
 SRC := $(wildcard $(SRCF)/*.cpp)
 OBJ := $(patsubst $(SRCF)/%.cpp,$(TEMP)/%.o,$(SRC))
 DEP := $(patsubst $(SRCF)/%.cpp,$(TEMP)/%.d,$(SRC))
-
-OUT := libsimpleomp
+LDFLAGS :=\
+	-L../dist\
+	-Llib\
+	-lsimpleomp\
+	-lgtest\
+	-sENVIRONMENT=node\
+	-sINITIAL_MEMORY=10MB
 
 # https://emscripten.org/docs/tools_reference/emcc.html
 # https://github.com/emscripten-core/emscripten/blob/main/src/settings.js
 
-CPPFLAGS := -I$(SRCF) -std=c++20 -DNCNN_SIMPLEOMP=1
+CPPFLAGS := -I$(SRCF) -Ilib -I../include -std=c++20
 CXXFLAGS := -Oz -flto -fopenmp -pthread -sDISABLE_EXCEPTION_CATCHING=1
-
-SLIB := $(TARGET)/$(OUT).a
 
 ifeq ($(OS),Windows_NT)
 # Error is still possible in parallel running, so we add extra protection
@@ -30,14 +32,16 @@ else
 	MK = @mkdir -p "$(@D)"
 endif
 
-.PHONY: all
-all: $(SLIB)
+JS := $(TARGET)/test.js
 
-$(SLIB): $(OBJ) makefile
+.PHONY: all
+all: $(JS)
+
+$(JS): $(OBJ) makefile ../dist/libsimpleomp.a
 	$(MK)
-	@echo Compiling [33m$(SLIB)[0m
-	@$(AR) $(USRFLAGS) rcs $@ $(OBJ)
-	@echo [33mLibrary compile complete![0m
+	@echo Compiling [33m$@[0m
+	@$(LINK.cc) $(USRFLAGS) $(OBJ) -o $@
+	@echo [33mTest compile complete![0m
 
 $(TEMP)/%.o: $(SRCF)/%.cpp
 	$(MK)
@@ -54,16 +58,3 @@ $(TEMP)/%.o: $(SRCF)/%.cpp
 .PHONY: clean
 clean:
 	@$(RM) "$(TEMP)"
-
-.PHONY: with-examples
-with-examples: all
-	@echo [33mBuilding examples...[0m
-	@$(MAKE) -C example --no-print-directory
-
-.PHONY: with-test
-with-test: all
-	@$(MAKE) -C test --no-print-directory
-
-.PHONY: serve
-serve:
-	@pnpx statikk --coi example
