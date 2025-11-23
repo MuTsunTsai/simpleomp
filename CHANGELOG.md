@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.4] - 2025-01-24
+
+### Fixed
+- **Critical: Reduction buffer overflow/use-after-free**: Fixed memory safety bug in `__kmpc_reduce` causing random test failures with "memory access out of bounds" errors
+  - **Problem**: Tests would randomly fail with "RuntimeError: memory access out of bounds" in different reduction operations
+  - **Root cause**: Thread-local reduction buffer reuse without size checking
+    1. TLS buffer allocated with `malloc(reduce_size)` on first reduction
+    2. Subsequent reductions with different `reduce_size` would reuse the same buffer
+    3. If new `reduce_size` > old buffer size → buffer overflow when `memcpy()` writes beyond allocated memory
+    4. Additionally, buffer was freed in `__kmpc_end_reduce` but could be accessed again → use-after-free
+  - **Solution**: Store buffer size in header, reallocate when size changes
+    - Buffer layout: `[size_t: buffer_size][actual data...]`
+    - Check stored size before each reduction operation
+    - Reallocate if size mismatch detected
+  - **Impact**: Fixes all random "memory access out of bounds" crashes in reduction tests
+  - **Files modified**: [src/kmp_reduce.cpp](src/kmp_reduce.cpp)
+- **Critical: Barrier use-after-free in loops**: Fixed race condition causing deadlock when `#pragma omp barrier` is reused in loops
+  - **Problem**: When a barrier appears inside a loop (e.g., `for (int i = 0; i < 3; i++) { #pragma omp barrier }`), threads would occasionally deadlock on the second or third iteration
+  - **Root cause**: Use-after-free + ABA problem in barrier state lifecycle management
+    1. Thread 0 completes barrier, becomes last thread to depart, deletes the `BarrierState` object
+    2. Thread 0 immediately re-enters the loop and creates a new `BarrierState` at the same location
+    3. Memory allocator returns the same address for the new state (ABA problem)
+    4. Threads 1-3 are still waking up from `condition.wait()` with a pointer to the old (deleted) state
+    5. When Threads 1-3 access the "new" state (same address but different object), they see inconsistent `generation` counters → deadlock
+  - **Solution**: Never delete barrier state objects. Instead, reuse the same `BarrierState` object for all subsequent barriers at the same location. Memory is only freed when the program exits.
+  - **Impact**: Fixes deadlocks in any code pattern where `#pragma omp barrier` appears inside a loop
+  - **Tradeoff**: Small memory leak (one `BarrierState` object per unique barrier location), but guarantees correctness
+
+### Added
+- Comprehensive test suites for OpenMP constructs (total: 168 tests across 9 test suites)
+  - **[test/specs/atomic.cpp](test/specs/atomic.cpp)** (24 tests): All atomic operations (arithmetic, bitwise, logical, min/max, read/write), different data types, edge cases
+  - **[test/specs/barrier.cpp](test/specs/barrier.cpp)** (11 tests): Synchronization semantics, memory visibility, multiple barriers, sequential barrier reuse (revealed use-after-free bug)
+  - **[test/specs/critical.cpp](test/specs/critical.cpp)** (13 tests): Named/unnamed critical sections, mutual exclusion, nesting, interaction with other constructs
+  - **[test/specs/master.cpp](test/specs/master.cpp)** (18 tests): Master-only execution, interaction with barriers, conditional logic, memory visibility
+  - **[test/specs/reduction.cpp](test/specs/reduction.cpp)** (28 tests): All reduction operators (+, -, *, &, |, ^, &&, ||, min, max), multiple variables, schedule/if clause interaction, correctness verification
+
+### Technical Details
+- **Modified files**:
+  - [src/kmp_reduce.cpp](src/kmp_reduce.cpp): Fixed buffer overflow/use-after-free by storing size in buffer header and reallocating when size changes
+  - [src/kmp_barrier.h](src/kmp_barrier.h): Removed `departed` field from `BarrierState` (no longer needed without cleanup logic)
+  - [src/kmp_barrier.cpp](src/kmp_barrier.cpp): Removed barrier state deletion logic, added comments explaining the design decision
+  - [test/makefile](test/makefile): Increased `INITIAL_MEMORY` from 10MB to 64MB to accommodate comprehensive test suite
+
 ## [1.6.3] - 2025-01-23
 
 ### Fixed
@@ -314,6 +357,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ring buffer task queue for efficient work distribution
 - Derived from Tencent NCNN threading implementation
 
+[1.6.4]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/MuTsunTsai/simpleomp/compare/v1.6.0...v1.6.1

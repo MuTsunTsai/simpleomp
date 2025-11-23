@@ -394,3 +394,53 @@ TEST_F(CancelTest, CancelWithAtomicOperations) {
     // Counter should have been incremented multiple times (at least by some threads)
     EXPECT_GT(final_count, 0) << "Counter should have been incremented";
 }
+
+// Test 12: RAII and object destruction with cancellation
+// Expected: C++ objects should be properly destructed even when cancellation occurs
+TEST_F(CancelTest, ObjectDestructionOnCancel) {
+    std::atomic<int> constructor_count{0};
+    std::atomic<int> destructor_count{0};
+
+    struct RAII {
+        std::atomic<int>& ctor_counter;
+        std::atomic<int>& dtor_counter;
+        int thread_id;
+
+        RAII(std::atomic<int>& ctor, std::atomic<int>& dtor, int tid)
+            : ctor_counter(ctor), dtor_counter(dtor), thread_id(tid) {
+            ctor_counter++;
+        }
+
+        ~RAII() {
+            dtor_counter++;
+        }
+    };
+
+    #pragma omp parallel num_threads(4)
+    {
+        int tid = omp_get_thread_num();
+
+        // Create RAII object - constructor should be called
+        RAII obj(constructor_count, destructor_count, tid);
+
+        // Thread 0 cancels immediately
+        if (tid == 0) {
+            #pragma omp cancel parallel
+            // Destructor should still be called for obj
+        }
+
+        // Other threads check cancellation point
+        #pragma omp cancellation point parallel
+
+        // May or may not reach here depending on timing
+    }
+    // When exiting parallel region, all objects should be destructed
+
+    // All threads that entered the parallel region should have constructed objects
+    int final_ctor = constructor_count.load();
+    int final_dtor = destructor_count.load();
+
+    EXPECT_EQ(final_ctor, 4) << "All 4 threads should have constructed RAII objects";
+    EXPECT_EQ(final_dtor, 4) << "All RAII objects should be destructed despite cancellation";
+    EXPECT_EQ(final_ctor, final_dtor) << "Constructor and destructor counts should match";
+}

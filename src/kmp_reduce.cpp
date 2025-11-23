@@ -71,18 +71,39 @@ int32_t __kmpc_reduce(void* loc, int32_t global_tid, int32_t num_vars,
     int thread_num = omp_get_thread_num();
 
     // Allocate thread-local buffer if not already done
+    // IMPORTANT: Always allocate new buffer because reduce_size may differ between reductions
     void* my_buffer = ncnn::tls_reduction_buffer.get();
+
+    // Check if we need to reallocate (first time or size changed)
+    // We store the size in the first sizeof(size_t) bytes of the buffer
+    bool need_realloc = false;
     if (my_buffer == nullptr)
     {
-        my_buffer = malloc(reduce_size);
-        memcpy(my_buffer, reduce_data, reduce_size);
-        ncnn::tls_reduction_buffer.set(my_buffer);
+        need_realloc = true;
     }
     else
     {
-        // Update thread-local copy with current values
-        memcpy(my_buffer, reduce_data, reduce_size);
+        // Check if the stored size matches the current reduce_size
+        size_t stored_size = *((size_t*)my_buffer);
+        if (stored_size != reduce_size)
+        {
+            // Size changed, need to reallocate
+            free(my_buffer);
+            need_realloc = true;
+        }
     }
+
+    if (need_realloc)
+    {
+        // Allocate buffer: size header + actual data
+        my_buffer = malloc(sizeof(size_t) + reduce_size);
+        *((size_t*)my_buffer) = reduce_size; // Store size in header
+        ncnn::tls_reduction_buffer.set(my_buffer);
+    }
+
+    // Copy data to thread-local buffer (skip the size header)
+    void* data_ptr = (char*)my_buffer + sizeof(size_t);
+    memcpy(data_ptr, reduce_data, reduce_size);
 
     // For SimpleOMP, we use the atomic method (return 2) for all non-master threads
     // This tells the compiler to generate atomic operations for the reduction
