@@ -31,7 +31,7 @@ TEST(CriticalTest, BasicMutualExclusion) {
 
             // Simulate some work
             volatile int dummy = 0;
-            for (int i = 0; i < 100; i++) { dummy++; }
+            for (int i = 0; i < 100; i++) { dummy = dummy + 1; }
 
             // Non-atomic increment should be safe in critical section
             shared_counter++;
@@ -66,7 +66,7 @@ TEST(CriticalTest, NamedCriticalIndependence) {
                        !max_a_concurrent.compare_exchange_weak(expected, current)) {}
 
                 volatile int dummy = 0;
-                for (int i = 0; i < 1000; i++) { dummy++; }
+                for (int i = 0; i < 1000; i++) { dummy = dummy + 1; }
                 section_a_concurrent.fetch_sub(1, std::memory_order_relaxed);
             }
         } else {
@@ -78,7 +78,7 @@ TEST(CriticalTest, NamedCriticalIndependence) {
                        !max_b_concurrent.compare_exchange_weak(expected, current)) {}
 
                 volatile int dummy = 0;
-                for (int i = 0; i < 1000; i++) { dummy++; }
+                for (int i = 0; i < 1000; i++) { dummy = dummy + 1; }
                 section_b_concurrent.fetch_sub(1, std::memory_order_relaxed);
             }
         }
@@ -111,7 +111,7 @@ TEST(CriticalTest, SameNameMutualExclusion) {
 
                 counter_a++;
                 volatile int dummy = 0;
-                for (int i = 0; i < 100; i++) { dummy++; }
+                for (int i = 0; i < 100; i++) { dummy = dummy + 1; }
                 concurrent_count.fetch_sub(1, std::memory_order_relaxed);
             }
         } else {
@@ -124,7 +124,7 @@ TEST(CriticalTest, SameNameMutualExclusion) {
 
                 counter_b++;
                 volatile int dummy = 0;
-                for (int i = 0; i < 100; i++) { dummy++; }
+                for (int i = 0; i < 100; i++) { dummy = dummy + 1; }
                 concurrent_count.fetch_sub(1, std::memory_order_relaxed);
             }
         }
@@ -157,7 +157,7 @@ TEST(CriticalTest, UnnamedCriticalShared) {
 
                 counter_x++;
                 volatile int dummy = 0;
-                for (int i = 0; i < 100; i++) { dummy++; }
+                for (int i = 0; i < 100; i++) { dummy = dummy + 1; }
                 concurrent_count.fetch_sub(1, std::memory_order_relaxed);
             }
         } else {
@@ -170,7 +170,7 @@ TEST(CriticalTest, UnnamedCriticalShared) {
 
                 counter_y++;
                 volatile int dummy = 0;
-                for (int i = 0; i < 100; i++) { dummy++; }
+                for (int i = 0; i < 100; i++) { dummy = dummy + 1; }
                 concurrent_count.fetch_sub(1, std::memory_order_relaxed);
             }
         }
